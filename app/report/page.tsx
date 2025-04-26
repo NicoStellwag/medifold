@@ -80,7 +80,7 @@ export default function ReportPage() {
     title: string,
     keyPrefix: string
   ) => (
-    <Card>
+    <Card className="bg-card border-border shadow-md">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -112,7 +112,7 @@ export default function ReportPage() {
     title: string,
     keyPrefix: string
   ) => (
-    <Card>
+    <Card className="bg-card border-border shadow-md">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -140,7 +140,10 @@ export default function ReportPage() {
   const renderLoadingSkeletons = () => (
     <div className="space-y-6">
       {[...Array(5)].map((_, i) => (
-        <Card key={`skeleton-card-${i}`}>
+        <Card
+          key={`skeleton-card-${i}`}
+          className="bg-card border-border shadow-md"
+        >
           <CardHeader>
             <Skeleton className="h-6 w-1/2 rounded" />
           </CardHeader>
@@ -173,7 +176,7 @@ export default function ReportPage() {
         {!isLoading && !error && tipsData && (
           <div className="space-y-6">
             {/* Status Quo Section */}
-            <Card>
+            <Card className="bg-card border-border shadow-md">
               <CardHeader>
                 <CardTitle>Status Quo</CardTitle>
               </CardHeader>
@@ -189,12 +192,12 @@ export default function ReportPage() {
               "painpoint"
             )}
 
-            {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
             {renderTipList(
               tipsData.habitTips,
               "Habit / Lifestyle Tips",
               "habit"
             )}
+            {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
             {renderTipList(
               tipsData.supplementProposals,
               "Supplement Proposals",
