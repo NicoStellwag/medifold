@@ -7,18 +7,25 @@ export const createClient = (cookieStore: ReturnType<typeof cookies>) => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
+        // Await cookieStore inside methods to potentially satisfy TypeScript/Next.js
+        async get(name: string) {
+          return (await cookieStore).get(name)?.value;
         },
-        setAll(cookiesToSet) {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            (await cookieStore).set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
+        },
+        async remove(name: string, options: CookieOptions) {
+          try {
+            (await cookieStore).set({ name, value: "", ...options });
+          } catch (error) {
+            // The `remove` method (implemented via set with empty value) was called
+            // from a Server Component. This can be ignored if you have middleware
+            // refreshing user sessions.
           }
         },
       },
