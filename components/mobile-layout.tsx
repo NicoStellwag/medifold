@@ -60,9 +60,27 @@ export default function MobileLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* Light mode decorative background elements */}
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 opacity-70 z-0 pointer-events-none dark:hidden"></div>
+
+      {/* Dark mode decorative background elements */}
+      <div className="fixed inset-0 hidden dark:block bg-gradient-to-br from-blue-950/40 via-background to-cyan-950/30 opacity-70 z-0 pointer-events-none"></div>
+
+      {/* Light mode top decorative blob */}
+      <div className="fixed top-0 right-0 h-96 w-96 bg-gradient-to-b from-blue-200 to-transparent rounded-full blur-3xl opacity-20 -z-10 pointer-events-none dark:hidden"></div>
+
+      {/* Dark mode top decorative blob */}
+      <div className="fixed top-0 right-0 hidden dark:block h-96 w-96 bg-gradient-to-b from-blue-500/20 to-transparent rounded-full blur-3xl opacity-20 -z-10 pointer-events-none"></div>
+
+      {/* Light mode bottom decorative blob */}
+      <div className="fixed bottom-0 left-0 h-96 w-96 bg-gradient-to-t from-purple-200 to-transparent rounded-full blur-3xl opacity-20 -z-10 pointer-events-none dark:hidden"></div>
+
+      {/* Dark mode bottom decorative blob */}
+      <div className="fixed bottom-0 left-0 hidden dark:block h-96 w-96 bg-gradient-to-t from-cyan-500/20 to-transparent rounded-full blur-3xl opacity-20 -z-10 pointer-events-none"></div>
+
       <Header user={user} />
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 relative z-10 px-4 pt-4 pb-8">{children}</main>
 
       <Footer />
 

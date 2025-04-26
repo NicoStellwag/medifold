@@ -18,6 +18,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { Notebook, Trash, Pencil, Save, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { motion } from "framer-motion";
 
 interface Note {
   id: number;
@@ -103,106 +104,153 @@ export default function NotesList({ notes: initialNotes }: NotesListProps) {
     setEditText(""); // Clear edit text regardless of success/failure
   };
 
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 },
+  };
+
   // --- Render Logic ---
   if (!notes || notes.length === 0) {
     return (
-      <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border bg-card shadow-sm">
-        <div className="rounded-full bg-muted p-4">
-          <Notebook className="h-8 w-8 text-primary" />
+      <Card className="flex h-40 w-full flex-col items-center justify-center rounded-xl overflow-hidden border-0 shadow-md">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50" />
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 p-4">
+            <Notebook className="h-8 w-8 text-primary" />
+          </div>
+          <p className="mt-4 text-center text-sm font-medium text-primary">
+            No notes yet
+          </p>
+          <p className="text-center text-xs text-muted-foreground">
+            Add notes using the quick note feature on the home page.
+          </p>
         </div>
-        <p className="mt-4 text-center text-sm font-medium text-foreground">
-          No notes yet
-        </p>
-        <p className="text-center text-xs text-muted-foreground">
-          Add notes using the quick note feature on the home page.
-        </p>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Your Notes</h2>
-      {notes.map((note) => (
-        <Card key={note.id} className="shadow-sm">
-          <CardContent className="p-4">
-            {editingNoteId === note.id ? (
-              // Edit Mode
-              <div className="space-y-2">
-                <Input
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="text-sm"
-                  autoFocus
-                />
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
-                    <X className="h-4 w-4 mr-1" /> Cancel
-                  </Button>
-                  <Button size="sm" onClick={() => handleSaveEdit(note.id)}>
-                    <Save className="h-4 w-4 mr-1" /> Save
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // View Mode
-              <div>
-                <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">
-                  {note.text}
-                </p>
-                <div className="flex justify-between items-center">
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(note.created_at), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleEditClick(note)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="sr-only">Edit Note</span>
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+      <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        Your Notes
+      </h2>
+      <motion.div
+        className="space-y-4"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        {notes.map((note) => (
+          <motion.div key={note.id} variants={item}>
+            <Card className="shadow-md overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50" />
+              <CardContent className="p-4 relative z-10">
+                {editingNoteId === note.id ? (
+                  // Edit Mode
+                  <div className="space-y-2">
+                    <Input
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="text-sm rounded-lg border-border focus-visible:ring-primary"
+                      autoFocus
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        className="text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                      >
+                        <X className="h-4 w-4 mr-1" /> Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveEdit(note.id)}
+                        className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground"
+                      >
+                        <Save className="h-4 w-4 mr-1" /> Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // View Mode
+                  <div>
+                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">
+                      {note.text}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(note.created_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          className="h-7 w-7 text-primary hover:bg-primary/10"
+                          onClick={() => handleEditClick(note)}
                         >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Delete Note</span>
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit Note</span>
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete the note.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(note.id)}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash className="h-4 w-4" />
+                              <span className="sr-only">Delete Note</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-card rounded-xl border-0 shadow-xl overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 to-destructive/10 opacity-50" />
+                            <div className="relative z-10">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-destructive">
+                                  Are you sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-muted-foreground">
+                                  This action cannot be undone. This will
+                                  permanently delete the note.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="rounded-lg border-border text-foreground hover:bg-destructive/10">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(note.id)}
+                                  className="rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </div>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
     </div>
   );
 }

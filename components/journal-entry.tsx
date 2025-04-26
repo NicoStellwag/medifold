@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PenLine, Sparkles } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { motion } from "framer-motion";
 
 export default function JournalEntry() {
   const supabase = createClient();
@@ -56,38 +57,57 @@ export default function JournalEntry() {
   return (
     <div className="relative space-y-3">
       {showConfetti && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Sparkles className="h-8 w-8 animate-bounce text-yellow-400" />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <Sparkles className="h-12 w-12 animate-bounce text-yellow-400 dark:text-yellow-300" />
+        </motion.div>
       )}
 
       {!isExpanded ? (
-        <Button
-          variant="outline"
-          className="flex w-full justify-start gap-2 bg-card py-6 shadow-sm transition-all hover:border-border/80 hover:shadow-md"
-          onClick={() => setIsExpanded(true)}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
-          <PenLine className="h-5 w-5 text-primary" />
-          <span className="font-medium text-primary">Add a quick note ✏️</span>
-        </Button>
+          <Button
+            variant="outline"
+            className="flex w-full justify-start gap-2 rounded-xl border border-border bg-card py-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+            onClick={() => setIsExpanded(true)}
+          >
+            <div className="rounded-full bg-gradient-to-r from-primary to-secondary p-2 text-primary-foreground">
+              <PenLine className="h-4 w-4" />
+            </div>
+            <span className="font-medium text-primary">
+              Add a quick note ✏️
+            </span>
+          </Button>
+        </motion.div>
       ) : (
-        <>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-3"
+        >
           <Textarea
             placeholder="How are you feeling today? 😊"
-            className="min-h-[100px] resize-none shadow-sm"
+            className="min-h-[100px] resize-none rounded-xl border-border bg-card shadow-sm focus-visible:ring-primary"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 rounded-xl border-border text-primary hover:bg-primary/10 hover:text-primary"
               onClick={() => setIsExpanded(false)}
             >
               Cancel
             </Button>
             <Button
-              className="flex-1 transition-all hover:shadow-md"
+              className="flex-1 rounded-xl bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground transition-all hover:shadow-md"
               onClick={handleSave}
               disabled={!note.trim() || isSaving}
             >
@@ -95,7 +115,7 @@ export default function JournalEntry() {
             </Button>
           </div>
           {saveError && <p className="text-sm text-destructive">{saveError}</p>}
-        </>
+        </motion.div>
       )}
     </div>
   );

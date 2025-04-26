@@ -8,7 +8,8 @@ import { cookies } from "next/headers"; // Import cookies
 import type { User } from "@supabase/supabase-js"; // Import User type
 import { redirect } from "next/navigation"; // Import redirect
 import Link from "next/link"; // Add Link import
-import { BarChart as BarChartIcon } from "lucide-react"; // Import BarChartIcon
+import { BarChart as BarChartIcon, Upload, PenLine } from "lucide-react"; // Import BarChartIcon and other icons
+import { motion } from "framer-motion";
 
 // Placeholder for your actual authentication check function/hook
 // Replace this with your real authentication logic
@@ -43,35 +44,74 @@ export default async function Home() {
     <MobileLayout user={user}>
       {" "}
       {/* Pass user as prop */}
-      <div className="relative flex flex-col items-center justify-center gap-6 px-4 py-6">
-        {/* Decorative elements - use theme colors, may need refinement */}
-        <div className="absolute left-0 top-0 h-32 w-32 rounded-full bg-primary opacity-20 blur-3xl dark:opacity-30"></div>
-        <div className="absolute bottom-20 right-0 h-24 w-24 rounded-full bg-secondary opacity-20 blur-3xl dark:opacity-30"></div>
+      <div className="relative flex flex-col items-center justify-center py-6">
+        {/* Premium glass card container */}
+        <Card className="relative w-full max-w-lg mx-auto overflow-hidden shadow-2xl border-0 backdrop-blur-md">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-70 z-0" />
 
-        <div className="relative z-10 mb-2">
-          <p className="text-center text-sm text-muted-foreground">
-            Track your health journey 🌱
-          </p>
-        </div>
+          {/* Decorative elements */}
+          <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-r from-primary/30 to-secondary/30 blur-xl opacity-40" />
+          <div className="absolute -left-12 -bottom-12 h-40 w-40 rounded-full bg-gradient-to-r from-secondary/30 to-primary/30 blur-xl opacity-40" />
 
-        <UploadButton />
-
-        {/* Use standard card background */}
-        <Card className="relative w-full overflow-hidden p-5 shadow-lg">
-          {/* Decorative element inside card - use accent? */}
-          <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-accent opacity-30"></div>
-          <JournalEntry />
-        </Card>
-
-        {/* Restyled Card linking to Report Page */}
-        <Link href="/report" passHref className="w-full max-w-xs">
-          <Card className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-500 p-6 text-primary-foreground shadow-lg transition-transform hover:scale-105">
-            <div className="flex flex-col items-center justify-center gap-2">
-              <BarChartIcon className="h-8 w-8" />
-              <span className="text-lg font-semibold">Generate Report</span>
+          <div className="relative z-10 p-6 space-y-8">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Your Health Companion
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Track your health journey and manage your documents
+              </p>
             </div>
-          </Card>
-        </Link>
+
+            {/* Upload section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold text-foreground">
+                  Upload Documents
+                </h2>
+              </div>
+              <div className="flex justify-center">
+                <UploadButton />
+              </div>
+            </div>
+
+            {/* Journal Entry */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <PenLine className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold text-foreground">
+                  Health Journal
+                </h2>
+              </div>
+              <div className="bg-card/80 rounded-xl p-5 shadow-lg backdrop-blur-sm border border-border/30">
+                <JournalEntry />
+              </div>
+            </div>
+
+            {/* Generate Report */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <BarChartIcon className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold text-foreground">
+                  Health Reports
+                </h2>
+              </div>
+              <Link href="/report" passHref className="block">
+                <div className="bg-gradient-to-r from-primary to-secondary p-4 rounded-xl shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer">
+                  <div className="flex items-center justify-center gap-3 text-primary-foreground">
+                    <BarChartIcon className="h-5 w-5" />
+                    <span className="text-base font-semibold">
+                      Generate Health Report
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </Card>
       </div>
     </MobileLayout>
   );

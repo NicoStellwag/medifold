@@ -22,6 +22,7 @@ import {
   HealthSubcategory,
 } from "@/lib/image-categories";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export default function UploadButton() {
   const [files, setFiles] = useState<File[]>([]);
@@ -293,27 +294,33 @@ export default function UploadButton() {
     } else if (file.type.includes("pdf")) {
       return <FileType className="h-8 w-8 text-red-500" />;
     } else {
-      return <FileText className="h-8 w-8 text-gray-500" />;
+      return <FileText className="h-8 w-8 text-muted-foreground" />;
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onDialogChange}>
       <DialogTrigger asChild>
-        <Button
-          size="lg"
-          className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-          onClick={handleTriggerClick}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-muted">
-            <Upload className="h-12 w-12 text-foreground transition-all group-hover:scale-110" />
-          </div>
-        </Button>
+          <Button
+            size="lg"
+            className="group h-32 w-32 rounded-full bg-gradient-to-r from-primary to-secondary p-1 shadow-xl transition-all hover:shadow-2xl"
+            onClick={handleTriggerClick}
+          >
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-primary/10">
+              <Upload className="h-12 w-12 text-primary transition-all group-hover:scale-110" />
+            </div>
+          </Button>
+        </motion.div>
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "sm:max-w-[525px]",
-          isDragging && "border-dashed border-primary" // Style for dragging
+          "sm:max-w-[525px] rounded-2xl border-0 shadow-xl overflow-hidden bg-card",
+          isDragging && "border-dashed border-primary"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -322,95 +329,109 @@ export default function UploadButton() {
           // Prevent focus trap issues if needed, often not required
         }}
       >
-        <DialogHeader>
-          <DialogTitle>Upload Files</DialogTitle>
-          <DialogDescription>
-            Select or drag and drop your health documents here. PDF and image
-            files accepted.
-          </DialogDescription>
-        </DialogHeader>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50 z-0" />
+        <div className="relative z-10">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-primary">
+              Upload Files
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Select or drag and drop your health documents here. PDF and image
+              files accepted.
+            </DialogDescription>
+          </DialogHeader>
 
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-          multiple // Allow multiple file selection
-          accept="application/pdf,image/*" // Accept PDFs and all image types
-        />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            multiple // Allow multiple file selection
+            accept="application/pdf,image/*" // Accept PDFs and all image types
+          />
 
-        {/* Drop Zone / Upload Button */}
-        <div
-          className={cn(
-            "mt-4 flex h-32 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed transition-colors hover:border-primary/70",
-            isDragging ? "border-primary bg-primary/10" : "border-border"
-          )}
-          onClick={handleUploadClick} // Trigger file input on click
-        >
-          <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            {isDragging
-              ? "Drop files here..."
-              : "Click or drag files to upload"}
-          </p>
-        </div>
-
-        {/* File List */}
-        {files.length > 0 && (
-          <div className="mt-4 max-h-60 space-y-2 overflow-y-auto">
-            <h4 className="text-sm font-medium">Selected File:</h4>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between rounded-md border bg-background p-3 pr-2" // Added bg-background
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  {" "}
-                  {/* Added min-w-0 */}
-                  {getFileIcon(file, index)}
-                  <div className="flex min-w-0 flex-col">
-                    {" "}
-                    {/* Added min-w-0 and flex-col */}
-                    <span className="truncate max-w-xs text-sm font-medium">
-                      {file.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                  onClick={() => removeFile(index)}
-                  disabled={isUploading} // Disable remove during upload
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Remove file</span>
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Upload Action Button */}
-        {files.length > 0 && (
-          <Button
-            onClick={uploadFiles}
-            disabled={isUploading || files.length === 0}
-            className="mt-4 w-full"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              `Upload ${files.length} File${files.length > 1 ? "s" : ""}`
+          {/* Drop Zone / Upload Button */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className={cn(
+              "mt-6 flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors hover:border-primary/40",
+              isDragging ? "border-primary bg-primary/10" : "border-border"
             )}
-          </Button>
-        )}
+            onClick={handleUploadClick} // Trigger file input on click
+          >
+            <Upload className="mb-2 h-8 w-8 text-primary" />
+            <p className="text-sm text-muted-foreground">
+              {isDragging
+                ? "Drop files here..."
+                : "Click or drag files to upload"}
+            </p>
+          </motion.div>
+
+          {/* File List */}
+          {files.length > 0 && (
+            <div className="mt-6 max-h-60 space-y-2 overflow-y-auto">
+              <h4 className="text-sm font-medium text-foreground">
+                Selected File:
+              </h4>
+              {files.map((file, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3 pr-2 shadow-sm"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    {getFileIcon(file, index)}
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate max-w-xs text-sm font-medium text-foreground">
+                        {file.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeFile(index)}
+                    disabled={isUploading} // Disable remove during upload
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Remove file</span>
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload Action Button */}
+          {files.length > 0 && (
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-6"
+            >
+              <Button
+                onClick={uploadFiles}
+                disabled={isUploading || files.length === 0}
+                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-semibold rounded-xl py-6 shadow-md"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  `Upload ${files.length} File${files.length > 1 ? "s" : ""}`
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
