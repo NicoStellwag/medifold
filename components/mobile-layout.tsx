@@ -70,7 +70,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           </span>
           <div>
             {user ? (
-              <DropdownMenu>
+              <DropdownMenu key="user-dropdown">
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -98,7 +98,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="space-x-2">
+              <div key="auth-buttons" className="space-x-2">
                 {/* Replace with Link components or onClick handlers for actual routing/modals */}
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/login">Login</Link>
