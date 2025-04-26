@@ -14,7 +14,7 @@ export default function Footer() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background/80 backdrop-blur-md shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
+    <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background/80 backdrop-blur-md shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_10px_rgba(0,0,0,0.2)] z-50">
       <div className="grid grid-cols-3 items-center py-1">
         <Link
           href="/"
@@ -22,9 +22,7 @@ export default function Footer() {
         >
           <div
             className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
-              isActive("/")
-                ? "bg-gradient-to-r from-primary to-secondary shadow-md"
-                : "hover:bg-gradient-to-r hover:from-primary/20 hover:to-secondary/20"
+              isActive("/") ? "bg-primary shadow-md" : "hover:bg-primary/10"
             }`}
           >
             <Home
@@ -49,8 +47,8 @@ export default function Footer() {
           <div
             className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
               isActive("/documents")
-                ? "bg-gradient-to-r from-primary to-secondary shadow-md"
-                : "hover:bg-gradient-to-r hover:from-primary/20 hover:to-secondary/20"
+                ? "bg-primary shadow-md"
+                : "hover:bg-primary/10"
             }`}
           >
             <FileText
@@ -77,8 +75,8 @@ export default function Footer() {
           <div
             className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
               isActive("/settings")
-                ? "bg-gradient-to-r from-primary to-secondary shadow-md"
-                : "hover:bg-gradient-to-r hover:from-primary/20 hover:to-secondary/20"
+                ? "bg-primary shadow-md"
+                : "hover:bg-primary/10"
             }`}
           >
             <Settings

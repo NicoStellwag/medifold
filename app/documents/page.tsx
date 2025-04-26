@@ -76,7 +76,7 @@ export default async function DocumentsPage() {
         const { data: signedUrlData, error: signedUrlError } =
           await supabase.storage
             .from("user-uploads")
-            .createSignedUrl(file.storage_path, 60); // 60 seconds expiration
+            .createSignedUrl(file.storage_path, 3600); // 1 hour expiration
 
         if (signedUrlError) {
           console.error(
