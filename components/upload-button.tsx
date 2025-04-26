@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, X, FileText, FileType } from "lucide-react";
+import { Upload, X, FileText, FileType, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
   HealthSubcategory,
 } from "@/lib/image-categories";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Helper function to generate natural language success messages
 function generateSuccessMessage(result: {
@@ -77,6 +79,7 @@ export default function UploadButton() {
   const [open, setOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -155,18 +158,21 @@ export default function UploadButton() {
   };
 
   const removeFile = (index: number) => {
+    if (isUploading) return;
     const updatedFiles = files.filter((_, i) => i !== index);
     const updatedPreviews = previews.filter((_, i) => i !== index);
     setFiles(updatedFiles);
     setPreviews(updatedPreviews);
-    // Don't close dialog here - let user decide or upload the rest
   };
 
   // --- Dialog Open Change Handler ---
   const onDialogChange = (isOpen: boolean) => {
+    if (isUploading && !isOpen) {
+      return;
+    }
     setOpen(isOpen);
     if (!isOpen) {
-      // Clear files when dialog is closed manually
+      // Clear files when dialog is closed manually (and not uploading)
       setFiles([]);
       setPreviews([]);
       setIsDragging(false); // Reset drag state
@@ -183,16 +189,15 @@ export default function UploadButton() {
     });
 
   const uploadFiles = async () => {
-    if (files.length === 0 || !userId) return;
+    if (files.length === 0 || !userId || isUploading) return;
 
-    // --- Start Immediate Feedback & Background Task ---
+    setIsUploading(true);
     const filesToUpload = [...files]; // Copy files to process
-    setOpen(false); // Close dialog immediately
-    // Don't clear files/previews here yet
+    const totalFiles = filesToUpload.length;
 
-    // --- Process in Background ---
+    // --- Process uploads ---
     try {
-      const uploadPromises = filesToUpload.map(async (file) => {
+      const uploadPromises = filesToUpload.map(async (file, index) => {
         let category: TopLevelCategory | string = "other";
         let subcategory: DietSubcategory | HealthSubcategory | string | null =
           null;
@@ -259,6 +264,7 @@ export default function UploadButton() {
           ); // Throw specific error
         }
 
+        // --- Database Insertion ---
         const { data: dbData, error: dbError } = await supabase
           .from("uploaded_files")
           .insert({
@@ -274,10 +280,15 @@ export default function UploadButton() {
 
         if (dbError) {
           console.error("Database error:", dbError);
-          // Consider rollback/cleanup?
+          // Consider rollback/cleanup? Maybe delete the uploaded file?
+          try {
+            await supabase.storage.from("user-uploads").remove([filePath]);
+          } catch (removeError) {
+            console.error("Failed to remove file after DB error:", removeError);
+          }
           throw new Error(
             `Database error for ${file.name}: ${dbError.message}`
-          ); // Throw specific error
+          );
         }
 
         // Return classification results along with other data
@@ -297,14 +308,25 @@ export default function UploadButton() {
       const descriptionText = successMessages.join("\n"); // Join with newlines
 
       // --- Success Notification & Cleanup ---
-      setFiles([]); // Clear files only after success
-      setPreviews([]); // Clear previews only after success
+      toast.success("Upload Complete!", {
+        description: `${totalFiles} file${
+          totalFiles > 1 ? "s" : ""
+        } uploaded successfully.\n${descriptionText}`,
+        duration: 5000,
+      });
+      setOpen(false); // Close dialog on success
     } catch (error: any) {
       // --- Failure Notification ---
-      console.error("Error during bulk upload process:", error);
-      // Display a generic error for the whole batch
+      console.error("Error during upload process:", error);
+      toast.error("Upload Failed", {
+        description: `An error occurred during upload: ${
+          error.message || "Unknown error"
+        }. Please try again.`,
+        duration: 5000,
+      });
+    } finally {
+      setIsUploading(false); // Ensure uploading state is reset
     }
-    // --- End Background Task ---
   };
 
   const getFileIcon = (file: File, index: number) => {
@@ -394,6 +416,16 @@ export default function UploadButton() {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onInteractOutside={(e) => {
+            if (isUploading) {
+              e.preventDefault();
+            }
+          }}
+          onEscapeKeyDown={(e) => {
+            if (isUploading) {
+              e.preventDefault();
+            }
+          }}
         >
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold text-blue-600">
@@ -422,43 +454,62 @@ export default function UploadButton() {
             </div>
           ) : (
             <div className="mt-4 space-y-4">
-              <div className="max-h-60 space-y-2 overflow-y-auto border p-2 rounded-md">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-md border border-blue-100 bg-white p-2 shadow-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded bg-blue-50">
-                        {getFileIcon(file, index)}
+              {isUploading ? (
+                <div className="flex flex-col items-center justify-center space-y-4 p-4">
+                  <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Uploading {files.length} file{files.length !== 1 ? "s" : ""}
+                    ...
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-60 space-y-2 overflow-y-auto border p-2 rounded-md">
+                    {files.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between rounded-md border border-blue-100 bg-white p-2 shadow-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-10 w-10 items-center justify-center rounded bg-blue-50">
+                            {getFileIcon(file, index)}
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="truncate text-sm font-medium">
+                              {file.name}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                          onClick={() => removeFile(index)}
+                          disabled={isUploading}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <div className="overflow-hidden">
-                        <p className="truncate text-sm font-medium">
-                          {file.name}
-                        </p>
-                        {/* <div className="mt-1">
-                          {getCategoryBadge(null, null)} // Removed this badge display
-                        </div> */}
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
-                      onClick={() => removeFile(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <Button
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
-                onClick={uploadFiles}
-                disabled={!userId || files.length === 0}
-              >
-                Upload {files.length > 1 ? `${files.length} files` : `1 file`}
-              </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
+                    onClick={uploadFiles}
+                    disabled={!userId || files.length === 0 || isUploading}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      `Upload ${
+                        files.length > 1 ? `${files.length} files` : `1 file`
+                      }`
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </DialogContent>
