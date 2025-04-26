@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User as UserIcon, LogOut } from "lucide-react";
+import { User as UserIcon, LogOut, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -79,6 +79,15 @@ export default function Header({ user: initialUser }: HeaderProps) {
                 align="end"
                 className="rounded-xl border border-border shadow-lg"
               >
+                <DropdownMenuItem
+                  asChild
+                  className="rounded-lg hover:bg-primary/10"
+                >
+                  <Link href="/profile">
+                    <UserCog className="mr-2 h-4 w-4 text-primary" />
+                    <span className="text-foreground">Profile</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="rounded-lg hover:bg-primary/10"
