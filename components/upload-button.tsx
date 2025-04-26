@@ -17,22 +17,75 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
+import {
+  TopLevelCategory,
+  DietSubcategory,
+  HealthSubcategory,
+} from "@/lib/image-categories";
+import { cn } from "@/lib/utils";
+
+// Helper function to generate natural language success messages
+function generateSuccessMessage(result: {
+  file_name: string;
+  category: TopLevelCategory | string;
+  subcategory: DietSubcategory | HealthSubcategory | string | null;
+}): string {
+  const { category, subcategory } = result;
+
+  // Helper to capitalize first letter (optional, depends on desired display)
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  switch (category) {
+    case TopLevelCategory.Diet:
+      const dietSub = subcategory as DietSubcategory;
+      return `Added ${
+        dietSub === DietSubcategory.Receipts
+          ? "a receipt"
+          : dietSub === DietSubcategory.FoodImages
+          ? "a food image"
+          : "a file"
+      } to ${capitalize(category)}.`;
+
+    case TopLevelCategory.Selfies:
+      // No subcategory for selfies
+      return `Added a selfie to ${capitalize(category)}.`;
+
+    case TopLevelCategory.Health:
+      const healthSub = subcategory as HealthSubcategory;
+      let healthFileType = "a document"; // Default
+      if (healthSub === HealthSubcategory.PatientRecords)
+        healthFileType = "a patient record";
+      else if (healthSub === HealthSubcategory.DiagnosticReports)
+        healthFileType = "a diagnostic report";
+      else if (healthSub === HealthSubcategory.Prescriptions)
+        healthFileType = "a prescription";
+      else if (healthSub === HealthSubcategory.SurgicalDocuments)
+        healthFileType = "a surgical document";
+      return `Added ${healthFileType} to ${capitalize(category)}.`;
+
+    default:
+      // Use category if it's a string, otherwise provide generic message
+      const catDisplay =
+        typeof category === "string" ? capitalize(category) : "Uncategorized";
+      return `Added a file to ${catDisplay}.`;
+  }
+}
 
 export default function UploadButton() {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   // Get user data on component mount
   useEffect(() => {
     const getUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
@@ -40,99 +93,218 @@ export default function UploadButton() {
     getUserData();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      setFiles(newFiles);
+  // --- Simplified File Handling (Dialog controls open state) ---
+  const handleFilesSelected = (selectedFiles: File[]) => {
+    if (selectedFiles.length === 0) return;
 
-      // Generate previews for image files
-      setPreviews([]);
-      newFiles.forEach((file) => {
-        if (file.type.startsWith("image/")) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            setPreviews((prev) => [...prev, e.target?.result as string]);
-          };
-          reader.readAsDataURL(file);
-        } else {
-          setPreviews((prev) => [...prev, ""]);
-        }
-      });
+    setFiles(selectedFiles);
+    setPreviews([]); // Reset previews
+
+    // Generate previews
+    selectedFiles.forEach((file) => {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviews((prev) => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setPreviews((prev) => [...prev, ""]);
+      }
+    });
+    // No need to setOpen(true) here, Dialog handles it
+  };
+
+  // --- Event Handlers ---
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFilesSelected(Array.from(e.target.files));
     }
+    if (e.target) e.target.value = ""; // Reset input
+  };
+
+  const handleTriggerClick = () => {
+    // This function isn't strictly needed if the button is just a trigger,
+    // but keep it in case we want to add logic later before opening.
+    // setOpen(true); // DialogTrigger handles opening
   };
 
   const handleUploadClick = () => {
+    // Specifically triggers the hidden file input
     fileInputRef.current?.click();
   };
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-    setPreviews(previews.filter((_, i) => i !== index));
+  // Drag handlers for the *dialog content* area
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
   };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    // Check if leaving to outside the window, might need refinement
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files) {
+      handleFilesSelected(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const removeFile = (index: number) => {
+    const updatedFiles = files.filter((_, i) => i !== index);
+    const updatedPreviews = previews.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
+    setPreviews(updatedPreviews);
+    // Don't close dialog here - let user decide or upload the rest
+  };
+
+  // --- Dialog Open Change Handler ---
+  const onDialogChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      // Clear files when dialog is closed manually
+      setFiles([]);
+      setPreviews([]);
+      setIsDragging(false); // Reset drag state
+    }
+  };
+
+  // Helper function to convert File to base64
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
 
   const uploadFiles = async () => {
     if (files.length === 0 || !userId) return;
 
-    setIsUploading(true);
-    setErrorMessage(null);
+    // --- Start Immediate Feedback & Background Task ---
+    const filesToUpload = [...files]; // Copy files to process
+    setOpen(false); // Close dialog immediately
+    // Don't clear files/previews here yet
 
+    // --- Process in Background ---
     try {
-      // Upload each file to Supabase Storage
-      const uploadPromises = files.map(async (file, index) => {
-        const fileExt = file.name.split('.').pop();
+      const uploadPromises = filesToUpload.map(async (file) => {
+        let category: TopLevelCategory | string = "other";
+        let subcategory: DietSubcategory | HealthSubcategory | string | null =
+          null;
+
+        // --- Image Classification Logic ---
+        if (file.type.startsWith("image/")) {
+          try {
+            const imageBase64 = await fileToBase64(file);
+            const response = await fetch("/api/classify-image", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ imageBase64 }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              console.warn(
+                `Classification failed for ${file.name}: ${response.status} ${
+                  errorData?.error || "Unknown error"
+                }`
+              );
+              category = TopLevelCategory.Selfies;
+              subcategory = null;
+            } else {
+              const classification = await response.json();
+              category = classification.category as TopLevelCategory;
+              subcategory = classification.subcategory as
+                | DietSubcategory
+                | HealthSubcategory
+                | null;
+            }
+          } catch (classifyError: any) {
+            console.error(
+              `Error during classification call for ${file.name}:`,
+              classifyError
+            );
+            category = TopLevelCategory.Selfies;
+            subcategory = null;
+          }
+        } else if (file.type === "application/pdf") {
+          category = TopLevelCategory.Health;
+          subcategory = HealthSubcategory.Other;
+        } else {
+          // Keep default 'other'
+        }
+        // --- End Classification Logic ---
+
+        const fileExt = file.name.split(".").pop();
         const fileName = `${uuidv4()}.${fileExt}`;
         const filePath = `${userId}/${fileName}`;
-        
-        // Upload file to the user-uploads bucket
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('user-uploads')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
+
+        const { data: storageData, error: storageError } =
+          await supabase.storage.from("user-uploads").upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
           });
-          
+
         if (storageError) {
-          console.error('Storage error:', storageError);
-          throw storageError;
+          console.error("Storage error:", storageError);
+          throw new Error(
+            `Storage error for ${file.name}: ${storageError.message}`
+          ); // Throw specific error
         }
 
-        // Insert record into the uploaded_files table
         const { data: dbData, error: dbError } = await supabase
-          .from('uploaded_files')
+          .from("uploaded_files")
           .insert({
             user_id: userId,
             file_name: file.name,
             storage_path: filePath,
             mime_type: file.type,
             size_bytes: file.size,
-            category: getFileCategory(file),
-            subcategory: '' // Can be updated later if needed
+            category: category,
+            subcategory: subcategory,
           })
           .select();
-          
+
         if (dbError) {
-          console.error('Database error:', dbError);
-          throw dbError;
+          console.error("Database error:", dbError);
+          // Consider rollback/cleanup?
+          throw new Error(
+            `Database error for ${file.name}: ${dbError.message}`
+          ); // Throw specific error
         }
 
-        return { storageData, dbData };
+        // Return classification results along with other data
+        return {
+          file_name: file.name,
+          category,
+          subcategory,
+          storageData,
+          dbData,
+        };
       });
 
-      await Promise.all(uploadPromises);
-      
-      setIsUploading(false);
-      setFiles([]);
-      setPreviews([]);
-      setOpen(false);
-      setShowSuccess(true);
+      const uploadResults = await Promise.all(uploadPromises);
 
-      // Hide success message after a delay
-      setTimeout(() => setShowSuccess(false), 3000);
+      // --- Format Success Toast Description ---
+      const successMessages = uploadResults.map(generateSuccessMessage);
+      const descriptionText = successMessages.join("\n"); // Join with newlines
+
+      // --- Success Notification & Cleanup ---
+      setFiles([]); // Clear files only after success
+      setPreviews([]); // Clear previews only after success
     } catch (error: any) {
-      console.error('Error uploading files:', error);
-      setIsUploading(false);
-      setErrorMessage(error.message || 'Failed to upload files. Please try again.');
+      // --- Failure Notification ---
+      console.error("Error during bulk upload process:", error);
+      // Display a generic error for the whole batch
     }
+    // --- End Background Task ---
   };
 
   const getFileIcon = (file: File, index: number) => {
@@ -154,43 +326,42 @@ export default function UploadButton() {
     return <FileType className="h-5 w-5" />;
   };
 
-  const getFileCategory = (file: File) => {
-    if (file.type.startsWith("image/")) return "photo";
-    if (file.type === "application/pdf") return "health";
-    return "diet";
-  };
-
-  const getCategoryBadge = (category: string) => {
+  const getCategoryBadge = (
+    category: string | null,
+    subcategory: string | null
+  ) => {
+    // Updated to use TopLevelCategory enum for better type safety
     switch (category) {
-      case "diet":
+      case TopLevelCategory.Diet:
         return (
           <Badge
             variant="outline"
             className="border-green-200 bg-green-50 text-green-700"
           >
-            🍎 Diet
+            🍎 Diet {subcategory ? `(${subcategory})` : ""}
           </Badge>
         );
-      case "photo":
+      case TopLevelCategory.Selfies: // Updated from "photo"
         return (
           <Badge
             variant="outline"
             className="border-blue-200 bg-blue-50 text-blue-700"
           >
-            📸 Photo
+            📸 Selfies
           </Badge>
         );
-      case "health":
+      case TopLevelCategory.Health:
         return (
           <Badge
             variant="outline"
             className="border-red-200 bg-red-50 text-red-700"
           >
-            🏥 Health
+            🏥 Health {subcategory ? `(${subcategory})` : ""}
           </Badge>
         );
       default:
-        return null;
+        // Add a badge for 'other' or unknown categories if desired
+        return <Badge variant="secondary">{category || "Unknown"}</Badge>;
     }
   };
 
@@ -205,24 +376,12 @@ export default function UploadButton() {
         accept=".jpg,.jpeg,.png,.pdf,.txt"
       />
 
-      {showSuccess && (
-        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground shadow-lg">
-          🎉 Files uploaded successfully!
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-full bg-red-100 px-4 py-2 text-sm font-medium text-red-700 shadow-lg">
-          ❌ {errorMessage}
-        </div>
-      )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={onDialogChange}>
         <DialogTrigger asChild>
           <Button
             size="lg"
             className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-            onClick={handleUploadClick}
+            onClick={handleTriggerClick}
           >
             <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-muted">
               <Upload className="h-12 w-12 text-foreground transition-all group-hover:scale-110" />
@@ -230,19 +389,40 @@ export default function UploadButton() {
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold text-blue-600">
               Upload Files 📤
             </DialogTitle>
             <DialogDescription className="text-center text-sm text-muted-foreground">
-              Upload your files to our secure storage
+              Drag & drop files below or click the area to browse
             </DialogDescription>
           </DialogHeader>
 
-          {files.length > 0 ? (
-            <div className="space-y-4">
-              <div className="max-h-60 space-y-2 overflow-y-auto">
+          {files.length === 0 ? (
+            <div
+              className={cn(
+                "mt-4 flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-primary/50",
+                isDragging ? "border-primary bg-primary/10" : "bg-muted/20"
+              )}
+              onClick={handleUploadClick}
+            >
+              <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
+              <p className="text-sm font-medium text-foreground">
+                Drop files here
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                or click to browse
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              <div className="max-h-60 space-y-2 overflow-y-auto border p-2 rounded-md">
                 {files.map((file, index) => (
                   <div
                     key={index}
@@ -256,9 +436,9 @@ export default function UploadButton() {
                         <p className="truncate text-sm font-medium">
                           {file.name}
                         </p>
-                        <div className="mt-1">
-                          {getCategoryBadge(getFileCategory(file))}
-                        </div>
+                        {/* <div className="mt-1">
+                          {getCategoryBadge(null, null)} // Removed this badge display
+                        </div> */}
                       </div>
                     </div>
                     <Button
@@ -272,33 +452,13 @@ export default function UploadButton() {
                   </div>
                 ))}
               </div>
-
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
                 onClick={uploadFiles}
-                disabled={isUploading || !userId}
+                disabled={!userId || files.length === 0}
               >
-                {isUploading
-                  ? "Uploading..."
-                  : `Upload ${files.length > 1 ? files.length + " files" : ""}`}
+                Upload {files.length > 1 ? `${files.length} files` : `1 file`}
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10">
-              <div className="rounded-full bg-blue-100 p-4">
-                <Upload className="h-10 w-10 text-blue-500" />
-              </div>
-              <p className="mt-4 text-center text-sm font-medium text-blue-600">
-                Tap to select files 📁
-              </p>
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                We accept photos, PDFs, and text files
-              </p>
-              {!userId && (
-                <p className="mt-4 text-center text-xs text-red-500">
-                  You must be logged in to upload files
-                </p>
-              )}
             </div>
           )}
         </DialogContent>
