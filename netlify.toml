@@ -1,11 +1,13 @@
 [build]
-command = "npm run build"
+command = "npm run build:debug"
 publish = ".next"
+node_version = "18"
 
 [build.environment]
 NEXT_PUBLIC_SUPABASE_URL = ""
 NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
 OPENAI_API_KEY = ""
+NODE_OPTIONS = "--max-old-space-size=4096"
 
 # Disable secrets scanning for public environment variables
 [build.processing.secrets]
