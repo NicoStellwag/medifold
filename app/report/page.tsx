@@ -11,6 +11,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
+import MobileLayout from "@/components/mobile-layout";
+import { createClient } from "@/utils/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface HealthTips {
   dietTips: { tip: string; reason: string }[];
@@ -20,9 +23,23 @@ interface HealthTips {
 }
 
 export default function ReportPage() {
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
   const [tipsData, setTipsData] = useState<HealthTips | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Error fetching user:", error);
+      } else {
+        setUser(data.user);
+      }
+    };
+    getUserData();
+  }, [supabase]);
 
   useEffect(() => {
     const fetchTips = async () => {
@@ -107,47 +124,53 @@ export default function ReportPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Health Report & Tips</h1>
+    <MobileLayout user={user}>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Your Health Report & Tips</h1>
 
-      {isLoading && renderLoadingSkeletons()}
+        {isLoading && renderLoadingSkeletons()}
 
-      {error && (
-        <Alert variant="destructive">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>Error Fetching Tips</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <Alert variant="destructive">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Error Fetching Tips</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-      {!isLoading && !error && tipsData && (
-        <div className="space-y-6">
-          {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
-          {renderTipList(tipsData.habitTips, "Habit / Lifestyle Tips", "habit")}
-          {renderTipList(
-            tipsData.supplementProposals,
-            "Supplement Proposals",
-            "supplement"
-          )}
-          {renderTipList(tipsData.shoppingList, "Shopping List", "shopping")}
-        </div>
-      )}
+        {!isLoading && !error && tipsData && (
+          <div className="space-y-6">
+            {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
+            {renderTipList(
+              tipsData.habitTips,
+              "Habit / Lifestyle Tips",
+              "habit"
+            )}
+            {renderTipList(
+              tipsData.supplementProposals,
+              "Supplement Proposals",
+              "supplement"
+            )}
+            {renderTipList(tipsData.shoppingList, "Shopping List", "shopping")}
+          </div>
+        )}
 
-      {!isLoading && !error && !tipsData && (
-        <p className="text-center text-muted-foreground">
-          No tips data available.
-        </p>
-      )}
+        {!isLoading && !error && !tipsData && (
+          <p className="text-center text-muted-foreground">
+            No tips data available.
+          </p>
+        )}
 
-      {/* TODO: Add sections for detailed data visualization */}
-      {/* <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Detailed Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Charts and summaries of your health data will appear here.</p>
-        </CardContent>
-      </Card> */}
-    </div>
+        {/* TODO: Add sections for detailed data visualization */}
+        {/* <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Detailed Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Charts and summaries of your health data will appear here.</p>
+          </CardContent>
+        </Card> */}
+      </div>
+    </MobileLayout>
   );
 }

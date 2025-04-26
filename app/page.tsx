@@ -6,21 +6,9 @@ import { Card } from "@/components/ui/card";
 import { HomePage } from "@/components/home-page";
 import { createClient } from "@/utils/supabase/server"; // Import Supabase server client
 import { cookies } from "next/headers"; // Import cookies
-import type { User } from "@supabase/supabase-js"; // Import User type
 import Link from "next/link"; // Import Link
 import { Button } from "@/components/ui/button"; // Import Button for styling link
 import { BarChartIcon } from "lucide-react"; // Import an icon
-
-// Placeholder for your actual authentication check function/hook
-// Replace this with your real authentication logic
-// const checkAuth = async () => {
-//   // Example: Replace with your actual check (e.g., check session, cookie, etc.)
-//   // For demonstration, let's assume the user is not authenticated by default.
-//   // You might use next-auth, Clerk, Supabase Auth, etc.
-//   // const session = await getSession(); return !!session?.user;
-//   return false; // <-- Replace this line
-// };
-// Removed the placeholder checkAuth function
 
 export const metadata: Metadata = {
   title: "Medifold - Health Document Management",
@@ -64,28 +52,15 @@ export default async function Home() {
           <JournalEntry />
         </Card>
 
-        {/* New Card linking to Report Page */}
-        <Card className="w-full shadow-lg">
-          <Link href="/report" passHref>
-            <Button
-              variant="ghost"
-              className="flex h-full w-full items-center justify-start gap-3 p-5 text-left"
-            >
-              <BarChartIcon className="h-6 w-6 text-primary" />
-              <div>
-                <p className="font-semibold">View Health Report & Tips</p>
-                <p className="text-sm text-muted-foreground">
-                  Get personalized insights based on your data.
-                </p>
-              </div>
-            </Button>
-          </Link>
-        </Card>
-
-        {/* Use primary text color */}
-        <div className="mt-4 text-center text-sm font-medium text-primary">
-          Weekly insights delivered with ✨ magic ✨
-        </div>
+        {/* Restyled Card linking to Report Page */}
+        <Link href="/report" passHref className="w-full max-w-xs">
+          <Card className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-500 p-6 text-primary-foreground shadow-lg transition-transform hover:scale-105">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <BarChartIcon className="h-8 w-8" />
+              <span className="text-lg font-semibold">Generate Report</span>
+            </div>
+          </Card>
+        </Link>
       </div>
     </MobileLayout>
   );
