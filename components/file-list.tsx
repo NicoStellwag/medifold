@@ -5,8 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash, FileText } from "lucide-react";
+import { Trash, FileText, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
+// Configure pdfjs worker
+// Make sure the worker is available at this path
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 // Assuming UploadedFile type is defined in app/documents/page.tsx or a shared types file
 // If it's in page.tsx, we need to adjust the import path or move the type
@@ -65,6 +72,39 @@ export default function FileList({ files, onDeleteFile }: FileListProps) {
                         // TODO: Show placeholder icon instead by adding another element absolutely positioned
                       }}
                     />
+                  ) : file.signedUrl && file.file_name.endsWith(".pdf") ? (
+                    // PDF Preview
+                    <div className="w-full h-full flex items-center justify-center overflow-hidden">
+                      <Document
+                        file={file.signedUrl}
+                        loading={
+                          <div className="flex items-center justify-center w-full h-full">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                          </div>
+                        }
+                        error={
+                          <div className="flex flex-col items-center justify-center w-full h-full text-destructive text-center p-2">
+                            <FileText className="w-8 h-8 mb-1" />
+                            <span className="text-xs">Error loading PDF</span>
+                          </div>
+                        }
+                        onLoadError={(error) =>
+                          console.error(
+                            `Error loading PDF ${file.file_name}:`,
+                            error
+                          )
+                        }
+                      >
+                        {/* Render only the first page, scale to fit width */}
+                        <Page
+                          pageNumber={1}
+                          width={150} // Adjust width as needed for preview size
+                          renderAnnotationLayer={false} // Disable annotations for preview
+                          renderTextLayer={false} // Disable text selection for preview
+                          className="flex items-center justify-center" // Center the page content
+                        />
+                      </Document>
+                    </div>
                   ) : (
                     <FileText className="w-10 h-10 text-muted-foreground" />
                   )}

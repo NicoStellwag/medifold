@@ -249,9 +249,7 @@ export default async function DocumentsPage() {
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="notes" className="flex items-center gap-1">
               <span className="hidden sm:inline">Notes</span>
-              <span className="inline sm:hidden">
-                <Notebook size={16} />
-              </span>
+              <span className="inline sm:hidden">📝</span>
             </TabsTrigger>
             <TabsTrigger value="diet" className="flex items-center gap-1">
               <span className="hidden sm:inline">Diet</span>

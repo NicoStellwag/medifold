@@ -61,10 +61,15 @@ export default async function Home() {
           <JournalEntry />
         </Card>
 
-        {/* Use primary text color */}
-        <div className="mt-4 text-center text-sm font-medium text-primary">
-          Weekly insights delivered with ✨ magic ✨
-        </div>
+        {/* Restyled Card linking to Report Page */}
+        <Link href="/report" passHref className="w-full max-w-xs">
+          <Card className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-500 p-6 text-primary-foreground shadow-lg transition-transform hover:scale-105">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <BarChartIcon className="h-8 w-8" />
+              <span className="text-lg font-semibold">Generate Report</span>
+            </div>
+          </Card>
+        </Link>
       </div>
     </MobileLayout>
   );

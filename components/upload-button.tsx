@@ -281,151 +281,142 @@ export default function UploadButton() {
   };
 
   const getFileIcon = (file: File, index: number) => {
-    if (file.type.startsWith("image/") && previews[index]) {
+    if (previews[index]) {
+      // eslint-disable-next-line @next/next/no-img-element
       return (
-        <div className="relative h-10 w-10 overflow-hidden rounded">
-          <Image
-            src={previews[index] || "/placeholder.svg"}
-            alt={file.name}
-            fill
-            className="object-cover"
-          />
-        </div>
+        <img
+          src={previews[index]}
+          alt={`Preview ${file.name}`}
+          className="h-8 w-8 rounded-sm object-cover"
+        />
       );
+    } else if (file.type.includes("pdf")) {
+      return <FileType className="h-8 w-8 text-red-500" />;
+    } else {
+      return <FileText className="h-8 w-8 text-gray-500" />;
     }
-
-    if (file.type === "application/pdf")
-      return <FileText className="h-5 w-5" />;
-    return <FileType className="h-5 w-5" />;
   };
 
   return (
-    <>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="hidden"
-        multiple
-        accept=".jpg,.jpeg,.png,.pdf,.txt"
-      />
-
-      <Dialog open={open} onOpenChange={onDialogChange}>
-        <DialogTrigger asChild>
-          <Button
-            size="lg"
-            className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-            onClick={handleTriggerClick}
-          >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-muted">
-              <Upload className="h-12 w-12 text-foreground transition-all group-hover:scale-110" />
-            </div>
-          </Button>
-        </DialogTrigger>
-
-        <DialogContent
-          className="sm:max-w-md"
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onInteractOutside={(e) => {
-            if (isUploading) {
-              e.preventDefault();
-            }
-          }}
-          onEscapeKeyDown={(e) => {
-            if (isUploading) {
-              e.preventDefault();
-            }
-          }}
+    <Dialog open={open} onOpenChange={onDialogChange}>
+      <DialogTrigger asChild>
+        <Button
+          size="lg"
+          className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+          onClick={handleTriggerClick}
         >
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold text-blue-600">
-              Upload Files 📤
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm text-muted-foreground">
-              Drag & drop files below or click the area to browse
-            </DialogDescription>
-          </DialogHeader>
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-muted">
+            <Upload className="h-12 w-12 text-foreground transition-all group-hover:scale-110" />
+          </div>
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className={cn(
+          "sm:max-w-[525px]",
+          isDragging && "border-dashed border-primary" // Style for dragging
+        )}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onCloseAutoFocus={(e) => {
+          // Prevent focus trap issues if needed, often not required
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Upload Files</DialogTitle>
+          <DialogDescription>
+            Select or drag and drop your health documents here. PDF and image
+            files accepted.
+          </DialogDescription>
+        </DialogHeader>
 
-          {files.length === 0 ? (
-            <div
-              className={cn(
-                "mt-4 flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-primary/50",
-                isDragging ? "border-primary bg-primary/10" : "bg-muted/20"
-              )}
-              onClick={handleUploadClick}
-            >
-              <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">
-                Drop files here
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                or click to browse
-              </p>
-            </div>
-          ) : (
-            <div className="mt-4 space-y-4">
-              {isUploading ? (
-                <div className="flex flex-col items-center justify-center space-y-4 p-4">
-                  <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Uploading {files.length} file{files.length !== 1 ? "s" : ""}
-                    ...
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="max-h-60 space-y-2 overflow-y-auto border p-2 rounded-md">
-                    {files.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between rounded-md border border-blue-100 bg-white p-2 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-10 w-10 items-center justify-center rounded bg-blue-50">
-                            {getFileIcon(file, index)}
-                          </div>
-                          <div className="overflow-hidden">
-                            <p className="truncate text-sm font-medium">
-                              {file.name}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
-                          onClick={() => removeFile(index)}
-                          disabled={isUploading}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
-                    onClick={uploadFiles}
-                    disabled={!userId || files.length === 0 || isUploading}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      `Upload ${
-                        files.length > 1 ? `${files.length} files` : `1 file`
-                      }`
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          multiple // Allow multiple file selection
+          accept="application/pdf,image/*" // Accept PDFs and all image types
+        />
+
+        {/* Drop Zone / Upload Button */}
+        <div
+          className={cn(
+            "mt-4 flex h-32 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed transition-colors hover:border-primary/70",
+            isDragging ? "border-primary bg-primary/10" : "border-border"
           )}
-        </DialogContent>
-      </Dialog>
-    </>
+          onClick={handleUploadClick} // Trigger file input on click
+        >
+          <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            {isDragging
+              ? "Drop files here..."
+              : "Click or drag files to upload"}
+          </p>
+        </div>
+
+        {/* File List */}
+        {files.length > 0 && (
+          <div className="mt-4 max-h-60 space-y-2 overflow-y-auto">
+            <h4 className="text-sm font-medium">Selected File:</h4>
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between rounded-md border bg-background p-3 pr-2" // Added bg-background
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  {" "}
+                  {/* Added min-w-0 */}
+                  {getFileIcon(file, index)}
+                  <div className="flex min-w-0 flex-col">
+                    {" "}
+                    {/* Added min-w-0 and flex-col */}
+                    <span className="truncate max-w-xs text-sm font-medium">
+                      {file.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeFile(index)}
+                  disabled={isUploading} // Disable remove during upload
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Remove file</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload Action Button */}
+        {files.length > 0 && (
+          <Button
+            onClick={uploadFiles}
+            disabled={isUploading || files.length === 0}
+            className="mt-4 w-full"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              `Upload ${files.length} File${files.length > 1 ? "s" : ""}`
+            )}
+          </Button>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
+
+// --- Helper Functions (Consider moving to utils if complex) ---
+// (You might place helper functions related to file icons or previews here)
+// Example (basic):
+// const getFileIcon = (mimeType: string) => { ... };
