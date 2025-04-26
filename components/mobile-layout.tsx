@@ -22,24 +22,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
+  user: User | null;
 }
 
-export default function MobileLayout({ children }: MobileLayoutProps) {
+export default function MobileLayout({
+  children,
+  user: initialUser,
+}: MobileLayoutProps) {
   const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(initialUser);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!error && data?.user) {
-        setUser(data.user);
-      }
-    };
-
-    checkUser();
+    setUser(initialUser);
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setUser(session?.user ?? null);
       }
     );
@@ -47,13 +44,11 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [initialUser, supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    // Optionally redirect user after logout
-    // router.push('/');
+    window.location.pathname = "/";
   };
 
   // TODO: Implement handleLogin and handleRegister

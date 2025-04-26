@@ -5,10 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import type { User } from "@supabase/supabase-js";
 
-export default function DocumentsPage() {
+export default async function DocumentsPage() {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user;
+
   return (
-    <MobileLayout>
+    <MobileLayout user={user}>
       <div className="flex flex-col items-center justify-center gap-4 p-4">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
