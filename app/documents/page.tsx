@@ -1,10 +1,10 @@
-import type React from "react"
-import MobileLayout from "@/components/mobile-layout"
-import { FileText, Search, Apple, Camera } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import type React from "react";
+import MobileLayout from "@/components/mobile-layout";
+import { FileText, Search, Apple, Camera } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function DocumentsPage() {
   return (
@@ -14,12 +14,12 @@ export default function DocumentsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search documents..."
-            className="border-blue-200 bg-white pl-10 shadow-sm focus-visible:ring-blue-400"
+            className="pl-10 shadow-sm"
           />
         </div>
 
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-blue-50">
+          <TabsList className="grid w-full grid-cols-4 bg-muted">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="diet" className="flex items-center gap-1">
               <span className="hidden sm:inline">Diet</span>
@@ -44,17 +44,19 @@ export default function DocumentsPage() {
           </TabsContent>
 
           <TabsContent value="diet" className="mt-4">
-            <Card className="border-blue-100">
+            <Card>
               <CardContent className="p-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-medium text-blue-700">Diet Documents 🍎</h3>
-                      <p className="text-xs text-muted-foreground">Upload receipts for food tracking</p>
+                      <h3 className="font-medium text-foreground">
+                        Diet Documents 🍎
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Upload receipts for food tracking
+                      </p>
                     </div>
-                    <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
-                      Diet
-                    </Badge>
+                    <Badge variant="outline">Diet</Badge>
                   </div>
 
                   <EmptyState
@@ -68,17 +70,19 @@ export default function DocumentsPage() {
           </TabsContent>
 
           <TabsContent value="photo" className="mt-4">
-            <Card className="border-blue-100">
+            <Card>
               <CardContent className="p-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-medium text-blue-700">Photo Documents 📸</h3>
-                      <p className="text-xs text-muted-foreground">Upload selfies, skin photos</p>
+                      <h3 className="font-medium text-foreground">
+                        Photo Documents 📸
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Upload selfies, skin photos
+                      </p>
                     </div>
-                    <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
-                      Photo
-                    </Badge>
+                    <Badge variant="outline">Photo</Badge>
                   </div>
 
                   <EmptyState
@@ -92,17 +96,19 @@ export default function DocumentsPage() {
           </TabsContent>
 
           <TabsContent value="health" className="mt-4">
-            <Card className="border-blue-100">
+            <Card>
               <CardContent className="p-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-medium text-blue-700">Health Documents 🏥</h3>
-                      <p className="text-xs text-muted-foreground">Blood images, medical reports, text docs</p>
+                      <h3 className="font-medium text-foreground">
+                        Health Documents 🏥
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Blood images, medical reports, text docs
+                      </p>
                     </div>
-                    <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
-                      Health
-                    </Badge>
+                    <Badge variant="outline">Health</Badge>
                   </div>
 
                   <EmptyState
@@ -117,21 +123,23 @@ export default function DocumentsPage() {
         </Tabs>
       </div>
     </MobileLayout>
-  )
+  );
 }
 
 interface EmptyStateProps {
-  icon: React.ReactNode
-  title: string
-  description: string
+  icon: React.ReactNode;
+  title: string;
+  description: string;
 }
 
 function EmptyState({ icon, title, description }: EmptyStateProps) {
   return (
-    <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border border-blue-100 bg-white/80 shadow-sm">
-      <div className="rounded-full bg-blue-50 p-4">{icon}</div>
-      <p className="mt-4 text-center text-sm font-medium text-blue-600">{title}</p>
+    <div className="flex h-40 w-full flex-col items-center justify-center rounded-lg border bg-card shadow-sm">
+      <div className="rounded-full bg-muted p-4">{icon}</div>
+      <p className="mt-4 text-center text-sm font-medium text-foreground">
+        {title}
+      </p>
       <p className="text-center text-xs text-muted-foreground">{description}</p>
     </div>
-  )
+  );
 }

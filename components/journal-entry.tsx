@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { PenLine, Sparkles } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { PenLine, Sparkles } from "lucide-react";
 
 export default function JournalEntry() {
-  const [note, setNote] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [note, setNote] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleSave = () => {
-    if (!note.trim()) return
+    if (!note.trim()) return;
 
-    setIsSaving(true)
+    setIsSaving(true);
 
     // Simulate saving
     setTimeout(() => {
-      setIsSaving(false)
-      setNote("")
-      setIsExpanded(false)
-      setShowConfetti(true)
+      setIsSaving(false);
+      setNote("");
+      setIsExpanded(false);
+      setShowConfetti(true);
 
       // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 2000)
-    }, 1000)
-  }
+      setTimeout(() => setShowConfetti(false), 2000);
+    }, 1000);
+  };
 
   return (
     <div className="relative space-y-3">
@@ -39,26 +39,30 @@ export default function JournalEntry() {
       {!isExpanded ? (
         <Button
           variant="outline"
-          className="flex w-full justify-start gap-2 border-blue-200 bg-white py-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+          className="flex w-full justify-start gap-2 bg-card py-6 shadow-sm transition-all hover:border-border/80 hover:shadow-md"
           onClick={() => setIsExpanded(true)}
         >
-          <PenLine className="h-5 w-5 text-blue-500" />
-          <span className="font-medium text-blue-700">Add a quick note ✏️</span>
+          <PenLine className="h-5 w-5 text-primary" />
+          <span className="font-medium text-primary">Add a quick note ✏️</span>
         </Button>
       ) : (
         <>
           <Textarea
             placeholder="How are you feeling today? 😊"
-            className="min-h-[100px] resize-none border-blue-200 bg-white/80 shadow-sm focus-visible:ring-blue-400"
+            className="min-h-[100px] resize-none shadow-sm"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 border-blue-200" onClick={() => setIsExpanded(false)}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setIsExpanded(false)}
+            >
               Cancel
             </Button>
             <Button
-              className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
+              className="flex-1 transition-all hover:shadow-md"
               onClick={handleSave}
               disabled={!note.trim() || isSaving}
             >
@@ -68,5 +72,5 @@ export default function JournalEntry() {
         </>
       )}
     </div>
-  )
+  );
 }

@@ -142,7 +142,7 @@ export default function UploadButton() {
       />
 
       {showSuccess && (
-        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-800 shadow-lg">
+        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground shadow-lg">
           🎉 Files uploaded successfully!
         </div>
       )}
@@ -154,29 +154,11 @@ export default function UploadButton() {
             className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             onClick={handleUploadClick}
           >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-white transition-colors group-hover:bg-blue-50">
-              <Upload
-                className="h-12 w-12 text-transparent transition-all group-hover:scale-110"
-                style={{ stroke: "url(#uploadGradient)" }}
-              />
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-muted">
+              <Upload className="h-12 w-12 text-foreground transition-all group-hover:scale-110" />
             </div>
           </Button>
         </DialogTrigger>
-
-        <svg width="0" height="0" style={{ position: "absolute" }}>
-          <defs>
-            <linearGradient
-              id="uploadGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop stopColor="#3B82F6" offset="0%" />
-              <stop stopColor="#06B6D4" offset="100%" />
-            </linearGradient>
-          </defs>
-        </svg>
 
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
