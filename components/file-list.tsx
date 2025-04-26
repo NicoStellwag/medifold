@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import { motion } from "framer-motion";
 
 // Configure pdfjs worker
 // Make sure the worker is available at this path
@@ -37,10 +38,31 @@ interface FileListProps {
 
 // FileList component - Now a Client Component
 export default function FileList({ files, onDeleteFile }: FileListProps) {
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <motion.div
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
       {files.map((file) => (
-        <div key={file.id} className="flex flex-col">
+        <motion.div key={file.id} className="flex flex-col" variants={item}>
           <Link
             href={file.signedUrl || "#"}
             target="_blank"
@@ -113,7 +135,7 @@ export default function FileList({ files, onDeleteFile }: FileListProps) {
             </Card>
           </Link>
 
-          <div className="p-2 border-t border-x border-b rounded-b-md flex justify-between items-center bg-card">
+          <div className="p-2 border-t border-x border-b border-border rounded-b-md flex justify-between items-center bg-card">
             <p className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(file.created_at), {
                 addSuffix: true,
@@ -139,8 +161,8 @@ export default function FileList({ files, onDeleteFile }: FileListProps) {
               </Button>
             </form>
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

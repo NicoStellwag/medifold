@@ -55,16 +55,10 @@ export default async function Home() {
           <div className="p-6 space-y-6">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">
-                Your Health Companion
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">Medifold</h1>
               <p className="text-muted-foreground text-sm">
-                Securely track your health journey and manage your documents
+                Personalized health tips and recommendations
               </p>
-              <div className="flex items-center justify-center gap-1 mt-1 text-xs text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                <span>HIPAA-compliant secure storage</span>
-              </div>
             </div>
 
             {/* Upload section */}

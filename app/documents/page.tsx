@@ -236,14 +236,6 @@ export default async function DocumentsPage() {
   return (
     <MobileLayout user={user}>
       <div className="flex flex-col items-center justify-center gap-4 p-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search documents..."
-            className="pl-10 shadow-sm"
-          />
-        </div>
-
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-5 bg-muted">
             <TabsTrigger value="all">All</TabsTrigger>
