@@ -1,0 +1,32 @@
+[build]
+command = "npm run build"
+publish = ".next"
+
+[build.environment]
+NEXT_PUBLIC_SUPABASE_URL = ""
+NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
+OPENAI_API_KEY = ""
+
+# Disable secrets scanning for public environment variables
+[build.processing.secrets]
+scan = true
+SECRETS_SCAN_OMIT_KEYS = [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+]
+
+# Optimize caching for Next.js
+[[headers]]
+for = "/_next/static/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+# Handle Next.js image optimization
+[[redirects]]
+from = "/_next/image"
+to = "/.netlify/images"
+status = 200
+query = { url = ":url", w = ":width", q = ":quality" }
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"
