@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, FileText, FileType } from "lucide-react";
 import {
@@ -11,9 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/utils/supabase/client";
+import { v4 as uuidv4 } from "uuid";
 
 export default function UploadButton() {
   const [files, setFiles] = useState<File[]>([]);
@@ -21,7 +24,21 @@ export default function UploadButton() {
   const [isUploading, setIsUploading] = useState(false);
   const [open, setOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const supabase = createClient();
+
+  // Get user data on component mount
+  useEffect(() => {
+    const getUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getUserData();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -53,13 +70,56 @@ export default function UploadButton() {
     setPreviews(previews.filter((_, i) => i !== index));
   };
 
-  const uploadFiles = () => {
-    if (files.length === 0) return;
+  const uploadFiles = async () => {
+    if (files.length === 0 || !userId) return;
 
     setIsUploading(true);
+    setErrorMessage(null);
 
-    // Simulate upload
-    setTimeout(() => {
+    try {
+      // Upload each file to Supabase Storage
+      const uploadPromises = files.map(async (file, index) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `${userId}/${fileName}`;
+        
+        // Upload file to the user-uploads bucket
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from('user-uploads')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (storageError) {
+          console.error('Storage error:', storageError);
+          throw storageError;
+        }
+
+        // Insert record into the uploaded_files table
+        const { data: dbData, error: dbError } = await supabase
+          .from('uploaded_files')
+          .insert({
+            user_id: userId,
+            file_name: file.name,
+            storage_path: filePath,
+            mime_type: file.type,
+            size_bytes: file.size,
+            category: getFileCategory(file),
+            subcategory: '' // Can be updated later if needed
+          })
+          .select();
+          
+        if (dbError) {
+          console.error('Database error:', dbError);
+          throw dbError;
+        }
+
+        return { storageData, dbData };
+      });
+
+      await Promise.all(uploadPromises);
+      
       setIsUploading(false);
       setFiles([]);
       setPreviews([]);
@@ -68,7 +128,11 @@ export default function UploadButton() {
 
       // Hide success message after a delay
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 1500);
+    } catch (error: any) {
+      console.error('Error uploading files:', error);
+      setIsUploading(false);
+      setErrorMessage(error.message || 'Failed to upload files. Please try again.');
+    }
   };
 
   const getFileIcon = (file: File, index: number) => {
@@ -147,6 +211,12 @@ export default function UploadButton() {
         </div>
       )}
 
+      {errorMessage && (
+        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-full bg-red-100 px-4 py-2 text-sm font-medium text-red-700 shadow-lg">
+          ❌ {errorMessage}
+        </div>
+      )}
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
@@ -165,6 +235,9 @@ export default function UploadButton() {
             <DialogTitle className="text-center text-xl font-bold text-blue-600">
               Upload Files 📤
             </DialogTitle>
+            <DialogDescription className="text-center text-sm text-muted-foreground">
+              Upload your files to our secure storage
+            </DialogDescription>
           </DialogHeader>
 
           {files.length > 0 ? (
@@ -203,7 +276,7 @@ export default function UploadButton() {
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all hover:shadow-md"
                 onClick={uploadFiles}
-                disabled={isUploading}
+                disabled={isUploading || !userId}
               >
                 {isUploading
                   ? "Uploading..."
@@ -221,6 +294,11 @@ export default function UploadButton() {
               <p className="mt-2 text-center text-xs text-muted-foreground">
                 We accept photos, PDFs, and text files
               </p>
+              {!userId && (
+                <p className="mt-4 text-center text-xs text-red-500">
+                  You must be logged in to upload files
+                </p>
+              )}
             </div>
           )}
         </DialogContent>
