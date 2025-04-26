@@ -7,6 +7,9 @@ import { HomePage } from "@/components/home-page";
 import { createClient } from "@/utils/supabase/server"; // Import Supabase server client
 import { cookies } from "next/headers"; // Import cookies
 import type { User } from "@supabase/supabase-js"; // Import User type
+import Link from "next/link"; // Import Link
+import { Button } from "@/components/ui/button"; // Import Button for styling link
+import { BarChartIcon } from "lucide-react"; // Import an icon
 
 // Placeholder for your actual authentication check function/hook
 // Replace this with your real authentication logic
@@ -59,6 +62,24 @@ export default async function Home() {
           {/* Decorative element inside card - use accent? */}
           <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-accent opacity-30"></div>
           <JournalEntry />
+        </Card>
+
+        {/* New Card linking to Report Page */}
+        <Card className="w-full shadow-lg">
+          <Link href="/report" passHref>
+            <Button
+              variant="ghost"
+              className="flex h-full w-full items-center justify-start gap-3 p-5 text-left"
+            >
+              <BarChartIcon className="h-6 w-6 text-primary" />
+              <div>
+                <p className="font-semibold">View Health Report & Tips</p>
+                <p className="text-sm text-muted-foreground">
+                  Get personalized insights based on your data.
+                </p>
+              </div>
+            </Button>
+          </Link>
         </Card>
 
         {/* Use primary text color */}
