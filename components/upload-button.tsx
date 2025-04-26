@@ -1,113 +1,134 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Upload, X, FileText, FileType } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload, X, FileText, FileType } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 export default function UploadButton() {
-  const [files, setFiles] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
-  const [isUploading, setIsUploading] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files)
-      setFiles(newFiles)
+      const newFiles = Array.from(e.target.files);
+      setFiles(newFiles);
 
       // Generate previews for image files
-      setPreviews([])
+      setPreviews([]);
       newFiles.forEach((file) => {
         if (file.type.startsWith("image/")) {
-          const reader = new FileReader()
+          const reader = new FileReader();
           reader.onload = (e) => {
-            setPreviews((prev) => [...prev, e.target?.result as string])
-          }
-          reader.readAsDataURL(file)
+            setPreviews((prev) => [...prev, e.target?.result as string]);
+          };
+          reader.readAsDataURL(file);
         } else {
-          setPreviews((prev) => [...prev, ""])
+          setPreviews((prev) => [...prev, ""]);
         }
-      })
+      });
     }
-  }
+  };
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click()
-  }
+    fileInputRef.current?.click();
+  };
 
   const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index))
-    setPreviews(previews.filter((_, i) => i !== index))
-  }
+    setFiles(files.filter((_, i) => i !== index));
+    setPreviews(previews.filter((_, i) => i !== index));
+  };
 
   const uploadFiles = () => {
-    if (files.length === 0) return
+    if (files.length === 0) return;
 
-    setIsUploading(true)
+    setIsUploading(true);
 
     // Simulate upload
     setTimeout(() => {
-      setIsUploading(false)
-      setFiles([])
-      setPreviews([])
-      setOpen(false)
-      setShowSuccess(true)
+      setIsUploading(false);
+      setFiles([]);
+      setPreviews([]);
+      setOpen(false);
+      setShowSuccess(true);
 
       // Hide success message after a delay
-      setTimeout(() => setShowSuccess(false), 3000)
-    }, 1500)
-  }
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1500);
+  };
 
   const getFileIcon = (file: File, index: number) => {
     if (file.type.startsWith("image/") && previews[index]) {
       return (
         <div className="relative h-10 w-10 overflow-hidden rounded">
-          <Image src={previews[index] || "/placeholder.svg"} alt={file.name} fill className="object-cover" />
+          <Image
+            src={previews[index] || "/placeholder.svg"}
+            alt={file.name}
+            fill
+            className="object-cover"
+          />
         </div>
-      )
+      );
     }
 
-    if (file.type === "application/pdf") return <FileText className="h-5 w-5" />
-    return <FileType className="h-5 w-5" />
-  }
+    if (file.type === "application/pdf")
+      return <FileText className="h-5 w-5" />;
+    return <FileType className="h-5 w-5" />;
+  };
 
   const getFileCategory = (file: File) => {
-    if (file.type.startsWith("image/")) return "photo"
-    if (file.type === "application/pdf") return "health"
-    return "diet"
-  }
+    if (file.type.startsWith("image/")) return "photo";
+    if (file.type === "application/pdf") return "health";
+    return "diet";
+  };
 
   const getCategoryBadge = (category: string) => {
     switch (category) {
       case "diet":
         return (
-          <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+          <Badge
+            variant="outline"
+            className="border-green-200 bg-green-50 text-green-700"
+          >
             🍎 Diet
           </Badge>
-        )
+        );
       case "photo":
         return (
-          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+          <Badge
+            variant="outline"
+            className="border-blue-200 bg-blue-50 text-blue-700"
+          >
             📸 Photo
           </Badge>
-        )
+        );
       case "health":
         return (
-          <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
+          <Badge
+            variant="outline"
+            className="border-red-200 bg-red-50 text-red-700"
+          >
             🏥 Health
           </Badge>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <>
@@ -133,24 +154,35 @@ export default function UploadButton() {
             className="group h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 p-1 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             onClick={handleUploadClick}
           >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-white transition-colors group-hover:bg-blue-50">
               <Upload
                 className="h-12 w-12 text-transparent transition-all group-hover:scale-110"
                 style={{ stroke: "url(#uploadGradient)" }}
               />
-              <svg width="0" height="0">
-                <linearGradient id="uploadGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop stopColor="#3B82F6" offset="0%" />
-                  <stop stopColor="#06B6D4" offset="100%" />
-                </linearGradient>
-              </svg>
             </div>
           </Button>
         </DialogTrigger>
 
+        <svg width="0" height="0" style={{ position: "absolute" }}>
+          <defs>
+            <linearGradient
+              id="uploadGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop stopColor="#3B82F6" offset="0%" />
+              <stop stopColor="#06B6D4" offset="100%" />
+            </linearGradient>
+          </defs>
+        </svg>
+
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold text-blue-600">Upload Files 📤</DialogTitle>
+            <DialogTitle className="text-center text-xl font-bold text-blue-600">
+              Upload Files 📤
+            </DialogTitle>
           </DialogHeader>
 
           {files.length > 0 ? (
@@ -166,8 +198,12 @@ export default function UploadButton() {
                         {getFileIcon(file, index)}
                       </div>
                       <div className="overflow-hidden">
-                        <p className="truncate text-sm font-medium">{file.name}</p>
-                        <div className="mt-1">{getCategoryBadge(getFileCategory(file))}</div>
+                        <p className="truncate text-sm font-medium">
+                          {file.name}
+                        </p>
+                        <div className="mt-1">
+                          {getCategoryBadge(getFileCategory(file))}
+                        </div>
                       </div>
                     </div>
                     <Button
@@ -187,7 +223,9 @@ export default function UploadButton() {
                 onClick={uploadFiles}
                 disabled={isUploading}
               >
-                {isUploading ? "Uploading..." : `Upload ${files.length > 1 ? files.length + " files" : ""}`}
+                {isUploading
+                  ? "Uploading..."
+                  : `Upload ${files.length > 1 ? files.length + " files" : ""}`}
               </Button>
             </div>
           ) : (
@@ -195,12 +233,16 @@ export default function UploadButton() {
               <div className="rounded-full bg-blue-100 p-4">
                 <Upload className="h-10 w-10 text-blue-500" />
               </div>
-              <p className="mt-4 text-center text-sm font-medium text-blue-600">Tap to select files 📁</p>
-              <p className="mt-2 text-center text-xs text-muted-foreground">We accept photos, PDFs, and text files</p>
+              <p className="mt-4 text-center text-sm font-medium text-blue-600">
+                Tap to select files 📁
+              </p>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                We accept photos, PDFs, and text files
+              </p>
             </div>
           )}
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
