@@ -7,6 +7,8 @@ import { createClient } from "@/utils/supabase/server"; // Import Supabase serve
 import { cookies } from "next/headers"; // Import cookies
 import type { User } from "@supabase/supabase-js"; // Import User type
 import { redirect } from "next/navigation"; // Import redirect
+import Link from "next/link"; // Add Link import
+import { BarChart as BarChartIcon } from "lucide-react"; // Import BarChartIcon
 
 // Placeholder for your actual authentication check function/hook
 // Replace this with your real authentication logic
