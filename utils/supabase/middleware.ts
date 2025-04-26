@@ -44,20 +44,24 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define public paths that don't require authentication
-  const publicPaths = ["/", "/login", "/register", "/auth/callback"]; // Add any other public paths
+  // Note: Routes covered by the main middleware matcher config (like /onboarding) are already excluded
+  // from this middleware function execution. We only need to handle the redirect target here.
+  // publicPaths definition might still be useful if middleware logic becomes more complex
+  const publicPaths = ["/", "/login", "/register", "/auth/callback"];
 
-  // Redirect to login if user is not authenticated and accessing a protected route
-  // Exclude Next.js specific paths, API routes, and static files.
+  // Redirect to onboarding if user is not authenticated and accessing a protected route
+  // Exclude Next.js specific paths, API routes, static files, and public paths.
   if (
     !session &&
-    !publicPaths.includes(pathname) &&
+    !publicPaths.includes(pathname) && // Keep checking public paths like root, login etc.
     !pathname.startsWith("/_next") &&
     !pathname.startsWith("/api") &&
     !pathname.startsWith("/static") &&
-    !pathname.includes(".")
+    !pathname.includes(".") // Typically ignore file requests
+    // No need to check for /onboarding here due to the matcher config
   ) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
+    redirectUrl.pathname = "/onboarding"; // Redirect to onboarding start
     // Optionally, add the intended destination as a query parameter
     // redirectUrl.searchParams.set(`redirectedFrom`, pathname);
     return NextResponse.redirect(redirectUrl);

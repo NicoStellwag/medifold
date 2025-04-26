@@ -14,10 +14,11 @@ export const config = {
      * - favicon.ico (favicon file)
      * - api (API routes)
      * - auth (auth routes like login, register, callback)
+     * - onboarding (onboarding flow routes)
      * - images/ (your image directory if any)
      * - report (report page)
      * - / (the root path - already handled by page.tsx)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api|auth|images|report|^/$).+)",
+    "/((?!_next/static|_next/image|favicon.ico|api|auth|onboarding|images|report|^/$).+)",
   ],
 };
