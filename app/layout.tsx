@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Personalized health tips and recommendations",
   generator: "v0.dev",
   icons: {
-    icon: "/medifold_logo.png",
+    icon: "/icon.png",
   },
 };
 

@@ -28,7 +28,7 @@ import { motion } from "framer-motion";
 // Removed the placeholder checkAuth function
 
 export const metadata: Metadata = {
-  title: "Medifold - Secure Health Document Management",
+  title: "Medifold",
   description: "Securely upload and manage your health documents in one place",
 };
 
