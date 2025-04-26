@@ -61,12 +61,12 @@ export const NotificationPermissionScreen = () => {
           <CardHeader className="items-center text-center p-6 pt-8">
             <motion.div 
               variants={item}
-              className="relative p-1 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full mb-6"
+              className="relative p-1 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full mb-6"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <div className="p-3 bg-white rounded-full">
-                <Bell className="h-8 w-8 text-indigo-500" />
+                <Bell className="h-8 w-8 text-blue-500" />
               </div>
             </motion.div>
             <motion.div variants={item}>

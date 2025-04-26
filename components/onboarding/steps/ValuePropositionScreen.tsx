@@ -51,12 +51,12 @@ export const ValuePropositionScreen = () => {
           <CardHeader className="items-center text-center p-6 pt-8">
             <motion.div 
               variants={item}
-              className="relative p-1 bg-gradient-to-br from-purple-400 to-indigo-400 rounded-full mb-6"
+              className="relative p-1 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full mb-6"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <div className="p-3 bg-white rounded-full">
-                <CalendarDays className="h-8 w-8 text-purple-500" />
+                <CalendarDays className="h-8 w-8 text-blue-500" />
               </div>
             </motion.div>
             <motion.div variants={item}>
@@ -69,13 +69,13 @@ export const ValuePropositionScreen = () => {
           <CardContent className="p-8 space-y-6">
             <motion.div 
               variants={item}
-              className="bg-gradient-to-r from-blue-50 to-purple-50 p-5 rounded-xl border border-purple-100 shadow-sm"
+              className="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-xl border border-blue-100 shadow-sm"
               whileHover={{ scale: 1.02 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-semibold text-purple-800">Your Weekly Summary</h3>
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">Every Monday</Badge>
+                <h3 className="font-semibold text-blue-800">Your Weekly Summary</h3>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">Every Monday</Badge>
               </div>
               <ul className="list-disc list-inside text-gray-700 space-y-2 pl-2">
                 <li>Progress tracking based on your uploads</li>

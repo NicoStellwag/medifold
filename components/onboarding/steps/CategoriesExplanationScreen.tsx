@@ -45,13 +45,13 @@ export const CategoriesExplanationScreen = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className="relative"
     >
       {/* Background animated particles */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          className="absolute top-10 right-10 w-24 h-24 rounded-full bg-purple-200 opacity-30 blur-2xl"
+          className="absolute top-10 right-10 w-24 h-24 rounded-full bg-cyan-200 opacity-30 blur-2xl"
           animate={{
             y: [-8, 8, -8],
             transition: { duration: 6, repeat: Infinity, ease: "easeInOut" }
@@ -65,7 +65,7 @@ export const CategoriesExplanationScreen = () => {
           }}
         />
         <motion.div 
-          className="absolute top-1/3 left-1/4 w-16 h-16 rounded-full bg-pink-200 opacity-20 blur-xl"
+          className="absolute top-1/3 left-1/4 w-16 h-16 rounded-full bg-cyan-200 opacity-20 blur-xl"
           animate={{
             y: [-5, 15, -5],
             transition: { duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }
@@ -73,25 +73,17 @@ export const CategoriesExplanationScreen = () => {
         />
       </div>
 
-      <Card className="w-full max-w-md shadow-2xl bg-white rounded-2xl overflow-hidden border-0 relative backdrop-blur-sm z-10">
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50" 
-          variants={shimmerAnimation}
-          initial="hidden"
-          animate="show"
-          style={{
-            backgroundSize: "200% 200%"
-          }}
-        />
+      <Card className="w-full max-w-md shadow-xl bg-white rounded-2xl overflow-hidden border-0 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 opacity-50" />
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
           className="relative z-10"
         >
-          <CardHeader className="text-center p-6 pt-6">
+          <CardHeader className="text-center p-6 pt-8">
             <motion.div variants={itemVariants}>
-              <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Your Health Documents</CardTitle>
+              <CardTitle className="text-2xl font-bold text-cyan-600">Your Health Documents</CardTitle>
             </motion.div>
             <motion.div variants={itemVariants}>
               <CardDescription className="text-gray-600">Medifold organizes your health data into three simple categories</CardDescription>
@@ -101,11 +93,11 @@ export const CategoriesExplanationScreen = () => {
             {/* AI Classification Info */}
             <motion.div 
               variants={itemVariants}
-              className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl text-center shadow-sm mb-4"
+              className="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-xl text-center shadow-sm"
               whileHover={{ scale: 1.02 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <p className="text-sm text-indigo-700 font-medium">
+              <p className="text-gray-700 font-medium">
                 <span className="inline-block">✨</span> Our AI automatically categorizes your uploaded documents for intelligent use
               </p>
             </motion.div>
@@ -114,52 +106,55 @@ export const CategoriesExplanationScreen = () => {
             <div className="space-y-3">
               <motion.div 
                 variants={itemVariants}
-                className="flex items-start p-4 bg-purple-50 rounded-lg border border-purple-100"
+                className="flex items-start p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100"
                 whileHover={{ 
-                  scale: 1.02, 
-                  boxShadow: "0 4px 12px rgba(168, 85, 247, 0.1)",
-                  backgroundColor: "rgba(243, 232, 255, 1)" 
+                  scale: 1.02,
+                  boxShadow: "0 4px 12px rgba(8, 145, 178, 0.1)"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <FileText className="h-6 w-6 text-purple-600 mr-3 mt-1" />
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center mr-3">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-purple-800">Diet Records</h3>
-                  <p className="text-sm text-purple-600">Track your meals and nutrition</p>
+                  <h3 className="font-semibold text-cyan-600">Diet Records</h3>
+                  <p className="text-sm text-gray-600">Track your meals and nutrition</p>
                 </div>
               </motion.div>
               
               <motion.div 
                 variants={itemVariants}
-                className="flex items-start p-4 bg-blue-50 rounded-lg border border-blue-100"
+                className="flex items-start p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100"
                 whileHover={{ 
-                  scale: 1.02, 
-                  boxShadow: "0 4px 12px rgba(59, 130, 246, 0.1)",
-                  backgroundColor: "rgba(239, 246, 255, 1)" 
+                  scale: 1.02,
+                  boxShadow: "0 4px 12px rgba(8, 145, 178, 0.1)"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <Camera className="h-6 w-6 text-blue-600 mr-3 mt-1" />
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center mr-3">
+                  <Camera className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-blue-800">Photo Documentation</h3>
-                  <p className="text-sm text-blue-600">Visual records of your progress</p>
+                  <h3 className="font-semibold text-cyan-600">Photo Documentation</h3>
+                  <p className="text-sm text-gray-600">Visual records of your progress</p>
                 </div>
               </motion.div>
               
               <motion.div 
                 variants={itemVariants}
-                className="flex items-start p-4 bg-pink-50 rounded-lg border border-pink-100"
+                className="flex items-start p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100"
                 whileHover={{ 
-                  scale: 1.02, 
-                  boxShadow: "0 4px 12px rgba(236, 72, 153, 0.1)",
-                  backgroundColor: "rgba(253, 242, 248, 1)" 
+                  scale: 1.02,
+                  boxShadow: "0 4px 12px rgba(8, 145, 178, 0.1)"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <Headphones className="h-6 w-6 text-pink-600 mr-3 mt-1" />
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center mr-3">
+                  <Headphones className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-pink-800">Medical Records</h3>
-                  <p className="text-sm text-pink-600">Store important health documents</p>
+                  <h3 className="font-semibold text-cyan-600">Medical Records</h3>
+                  <p className="text-sm text-gray-600">Store important health documents</p>
                 </div>
               </motion.div>
             </div>
@@ -184,15 +179,7 @@ export const CategoriesExplanationScreen = () => {
                   onClick={nextStep} 
                   className="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white font-semibold py-2 px-6"
                 >
-                  <motion.span 
-                    initial={{ opacity: 1 }}
-                    whileHover={{ 
-                      opacity: [1, 0.8, 1], 
-                      transition: { duration: 1.5, repeat: Infinity } 
-                    }}
-                  >
-                    Continue
-                  </motion.span>
+                  Continue
                 </Button>
               </motion.div>
             </motion.div>

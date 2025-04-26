@@ -4,6 +4,7 @@ import { useOnboarding } from '@/context/OnboardingContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion } from 'framer-motion';
+import Image from "next/image";
 
 export const WelcomeScreen = () => {
   const { nextStep } = useOnboarding();
@@ -50,15 +51,17 @@ export const WelcomeScreen = () => {
             {/* Logo */}
             <motion.div 
               variants={item}
-              className="relative p-1 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full mb-6"
+              className="mb-6"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <div className="p-3 bg-white rounded-full">
-                <div className="bg-gradient-to-br from-blue-500 to-cyan-400 h-16 w-16 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-3xl">M</span>
-                </div>
-              </div>
+              <Image 
+                src="/medifold_logo.png"
+                alt="Medifold Logo"
+                width={120}
+                height={120}
+                className="object-contain"
+              />
             </motion.div>
             {/* Title and Description */}
             <motion.div variants={item}>

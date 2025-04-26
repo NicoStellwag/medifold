@@ -6,19 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Ruler, Scale, ALargeSmall } from 'lucide-react';
+import { Ruler, Weight, Users, CalendarDays } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const HealthMetricsScreen = () => {
   const { nextStep, prevStep, skipTo } = useOnboarding();
   // TODO: Consider moving metrics state to context if needed elsewhere
+  const [sex, setSex] = useState('');
   const [height, setHeight] = useState('175');
   const [weight, setWeight] = useState('70');
   const [age, setAge] = useState('30');
 
   const handleContinue = () => {
-    // TODO: Save basic info (height, weight, age)
-    console.log("Basic Info:", { height, weight, age });
+    // TODO: Save basic info (sex, height, weight, age)
+    console.log("Basic Info:", { sex, height, weight, age });
     // Add validation if needed
     nextStep();
   };
@@ -69,11 +71,9 @@ export const HealthMetricsScreen = () => {
             <motion.div 
               variants={item}
               className="relative p-1 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full mb-6 mx-auto"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <div className="p-3 bg-white rounded-full">
-                <Scale className="h-8 w-8 text-teal-500" />
+                <Weight className="h-8 w-8 text-teal-500" />
               </div>
             </motion.div>
             <motion.div variants={item}>
@@ -87,8 +87,28 @@ export const HealthMetricsScreen = () => {
             <motion.div 
               variants={item} 
               className="space-y-2 relative"
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Label htmlFor="sex" className="flex items-center mb-2 text-gray-700">
+                <div className="p-1.5 bg-indigo-100 rounded-full mr-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                </div>
+                Sex
+              </Label>
+              <Select value={sex} onValueChange={setSex}>
+                <SelectTrigger className="border-gray-300 focus:border-indigo-400 focus:ring-indigo-400">
+                  <SelectValue placeholder="Select sex" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </motion.div>
+
+            <motion.div 
+              variants={item} 
+              className="space-y-2 relative"
             >
               <Label htmlFor="height" className="flex items-center mb-2 text-gray-700">
                 <div className="p-1.5 bg-blue-100 rounded-full mr-2">
@@ -109,12 +129,10 @@ export const HealthMetricsScreen = () => {
             <motion.div 
               variants={item} 
               className="space-y-2 relative"
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <Label htmlFor="weight" className="flex items-center mb-2 text-gray-700">
                 <div className="p-1.5 bg-green-100 rounded-full mr-2">
-                  <Scale className="h-5 w-5 text-green-600" />
+                  <Weight className="h-5 w-5 text-green-600" />
                 </div>
                 Weight (kg)
               </Label>
@@ -131,12 +149,10 @@ export const HealthMetricsScreen = () => {
             <motion.div 
               variants={item} 
               className="space-y-2 relative"
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <Label htmlFor="age" className="flex items-center mb-2 text-gray-700">
                 <div className="p-1.5 bg-purple-100 rounded-full mr-2">
-                  <ALargeSmall className="h-5 w-5 text-purple-600" />
+                  <CalendarDays className="h-5 w-5 text-purple-600" />
                 </div>
                 Age
               </Label>
