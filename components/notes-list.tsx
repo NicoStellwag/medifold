@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,11 +53,11 @@ export default function NotesList({ notes: initialNotes }: NotesListProps) {
       .match({ id: noteId });
 
     if (error) {
-      toast.error(`Failed to delete note: ${error.message}`);
+      console.error(`Failed to delete note: ${error.message}`);
       // Revert optimistic update
       setNotes(originalNotes);
     } else {
-      toast.success("Note deleted successfully");
+      console.log("Note deleted successfully");
     }
   };
 
@@ -75,7 +74,7 @@ export default function NotesList({ notes: initialNotes }: NotesListProps) {
 
   const handleSaveEdit = async (noteId: number) => {
     if (!editText.trim()) {
-      toast.error("Note cannot be empty");
+      console.error("Note cannot be empty");
       return;
     }
 
@@ -95,11 +94,11 @@ export default function NotesList({ notes: initialNotes }: NotesListProps) {
       .match({ id: noteId });
 
     if (error) {
-      toast.error(`Failed to update note: ${error.message}`);
+      console.error(`Failed to update note: ${error.message}`);
       // Revert optimistic update
       setNotes(originalNotes);
     } else {
-      toast.success("Note updated successfully");
+      console.log("Note updated successfully");
     }
     setEditText(""); // Clear edit text regardless of success/failure
   };
