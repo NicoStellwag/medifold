@@ -80,11 +80,9 @@ export default function MobileLayout({
 
       <Header user={user} />
 
-      <main className="flex-1 relative z-10 px-4 pt-4 pb-8">{children}</main>
+      <main className="flex-1 relative z-10 px-4 pt-4 pb-20">{children}</main>
 
       <Footer />
-
-      <div className="h-16" />
     </div>
   );
 }

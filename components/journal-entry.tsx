@@ -77,7 +77,7 @@ export default function JournalEntry() {
             className="flex w-full justify-start gap-2 rounded-xl border border-border bg-card py-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
             onClick={() => setIsExpanded(true)}
           >
-            <div className="rounded-full bg-gradient-to-r from-primary to-secondary p-2 text-primary-foreground">
+            <div className="rounded-full bg-primary p-2 text-primary-foreground">
               <PenLine className="h-4 w-4" />
             </div>
             <span className="font-medium text-primary">
@@ -107,7 +107,7 @@ export default function JournalEntry() {
               Cancel
             </Button>
             <Button
-              className="flex-1 rounded-xl bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground transition-all hover:shadow-md"
+              className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all hover:shadow-md"
               onClick={handleSave}
               disabled={!note.trim() || isSaving}
             >

@@ -8,7 +8,12 @@ import { cookies } from "next/headers"; // Import cookies
 import type { User } from "@supabase/supabase-js"; // Import User type
 import { redirect } from "next/navigation"; // Import redirect
 import Link from "next/link"; // Add Link import
-import { BarChart as BarChartIcon, Upload, PenLine } from "lucide-react"; // Import BarChartIcon and other icons
+import {
+  BarChart as BarChartIcon,
+  Upload,
+  PenLine,
+  ShieldCheck,
+} from "lucide-react"; // Import ShieldCheck icon
 import { motion } from "framer-motion";
 
 // Placeholder for your actual authentication check function/hook
@@ -23,8 +28,8 @@ import { motion } from "framer-motion";
 // Removed the placeholder checkAuth function
 
 export const metadata: Metadata = {
-  title: "Medifold - Health Document Management",
-  description: "Upload and manage your health documents in one place",
+  title: "Medifold - Secure Health Document Management",
+  description: "Securely upload and manage your health documents in one place",
 };
 
 export default async function Home() {
@@ -45,23 +50,14 @@ export default async function Home() {
       {" "}
       {/* Pass user as prop */}
       <div className="relative flex flex-col items-center justify-center py-6">
-        {/* Premium glass card container */}
-        <Card className="relative w-full max-w-lg mx-auto overflow-hidden shadow-2xl border-0 backdrop-blur-md">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-70 z-0" />
-
-          {/* Decorative elements */}
-          <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-r from-primary/30 to-secondary/30 blur-xl opacity-40" />
-          <div className="absolute -left-12 -bottom-12 h-40 w-40 rounded-full bg-gradient-to-r from-secondary/30 to-primary/30 blur-xl opacity-40" />
-
-          <div className="relative z-10 p-6 space-y-8">
+        {/* Professional card container */}
+        <Card className="relative w-full max-w-lg mx-auto overflow-hidden shadow-md border border-slate-200 dark:border-slate-800 backdrop-blur-sm">
+          <div className="p-6 space-y-6">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Your Health Companion
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">Medifold</h1>
               <p className="text-muted-foreground text-sm">
-                Track your health journey and manage your documents
+                Personalized health tips and recommendations
               </p>
             </div>
 
@@ -86,7 +82,7 @@ export default async function Home() {
                   Health Journal
                 </h2>
               </div>
-              <div className="bg-card/80 rounded-xl p-5 shadow-lg backdrop-blur-sm border border-border/30">
+              <div className="bg-background rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-800">
                 <JournalEntry />
               </div>
             </div>
@@ -100,7 +96,7 @@ export default async function Home() {
                 </h2>
               </div>
               <Link href="/report" passHref className="block">
-                <div className="bg-gradient-to-r from-primary to-secondary p-4 rounded-xl shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer">
+                <div className="bg-primary hover:bg-primary/90 p-4 rounded-lg shadow-sm transition-all border border-primary/20">
                   <div className="flex items-center justify-center gap-3 text-primary-foreground">
                     <BarChartIcon className="h-5 w-5" />
                     <span className="text-base font-semibold">

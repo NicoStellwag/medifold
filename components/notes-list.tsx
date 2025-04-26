@@ -142,9 +142,6 @@ export default function NotesList({ notes: initialNotes }: NotesListProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-        Your Notes
-      </h2>
       <motion.div
         className="space-y-4"
         variants={container}
