@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -22,6 +23,7 @@ export default function RootLayout({
           enableSystem={false} // Explicitly disable system theme preference if defaulting to light
         >
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

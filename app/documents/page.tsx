@@ -1,6 +1,6 @@
 import type React from "react";
 import MobileLayout from "@/components/mobile-layout";
-import { FileText, Search, Apple, Camera } from "lucide-react";
+import { FileText, Search, Apple, Camera, Notebook } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,12 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import type { User } from "@supabase/supabase-js";
+import NotesList from "@/components/notes-list";
 
 export default async function DocumentsPage() {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
-  const { data } = await supabase.auth.getUser();
-  const user = data?.user;
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
+
+  let notes: any[] = [];
+  if (user) {
+    const { data: notesData, error: notesError } = await supabase
+      .from("notes")
+      .select("id, text, created_at, user_id")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (notesError) {
+      console.error("Error fetching notes:", notesError);
+    } else {
+      notes = notesData || [];
+    }
+  }
 
   return (
     <MobileLayout user={user}>
@@ -27,8 +43,14 @@ export default async function DocumentsPage() {
         </div>
 
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-muted">
+          <TabsList className="grid w-full grid-cols-5 bg-muted">
             <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="notes" className="flex items-center gap-1">
+              <span className="hidden sm:inline">Notes</span>
+              <span className="inline sm:hidden">
+                <Notebook size={16} />
+              </span>
+            </TabsTrigger>
             <TabsTrigger value="diet" className="flex items-center gap-1">
               <span className="hidden sm:inline">Diet</span>
               <span className="inline sm:hidden">🍎</span>
@@ -49,6 +71,10 @@ export default async function DocumentsPage() {
               title="No documents yet"
               description="Upload something to get started"
             />
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-4">
+            <NotesList notes={notes} />
           </TabsContent>
 
           <TabsContent value="diet" className="mt-4">
