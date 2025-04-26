@@ -18,6 +18,7 @@ import {
   UserPlus,
 } from "lucide-react"; // Import icons
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function HomePage() {
   // Animation variants
@@ -51,9 +52,14 @@ export function HomePage() {
       <header className="sticky top-0 z-50 w-full border-b bg-white/80 py-3 backdrop-blur-md shadow-sm">
         <div className="container flex h-14 items-center justify-between">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-xl font-bold text-transparent">
-              Medifold
-            </span>
+            <Image
+              src="/medifold_logo.png"
+              alt="Medifold Logo"
+              width={48}
+              height={48}
+              className="object-contain [filter:drop-shadow(0_0_8px_rgba(59,130,246,0.5))_brightness(0)_saturate(100%)_invert(35%)_sepia(85%)_saturate(6457%)_hue-rotate(195deg)_brightness(102%)_contrast(102%)]"
+            />
+            <span className="sr-only">Medifold</span>
           </Link>
           <nav className="flex items-center space-x-2">
             <Button

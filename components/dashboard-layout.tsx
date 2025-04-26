@@ -2,6 +2,7 @@ import type React from "react";
 import Link from "next/link";
 import { Bell, Calendar, FileText, Home, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,8 +14,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="sticky top-0 z-10 border-b bg-background">
         <div className="flex h-16 items-center px-4 md:px-6">
           <Link href="/" className="flex items-center gap-2">
-            <FileText className="h-6 w-6 text-teal-600" />
-            <span className="text-xl font-bold">Medifold</span>
+            <Image
+              src="/medifold_logo.png"
+              alt="Medifold Logo"
+              width={48}
+              height={48}
+              className="object-contain [filter:brightness(0)_saturate(100%)_invert(48%)_sepia(61%)_saturate(6457%)_hue-rotate(175deg)_brightness(101%)_contrast(102%)] dark:[filter:brightness(0)_saturate(100%)_invert(80%)_sepia(32%)_saturate(4619%)_hue-rotate(178deg)_brightness(101%)_contrast(105%)]"
+            />
+            <span className="sr-only">Medifold</span>
           </Link>
           <nav className="ml-auto flex items-center gap-4">
             <Button variant="ghost" size="icon">
