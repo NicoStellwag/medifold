@@ -49,15 +49,15 @@ export default function Header({ user: initialUser }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md shadow-sm">
       <div className="flex items-center justify-between">
-        <Link href="/" passHref className="flex items-center">
+      <Link href="/" passHref className="flex items-center">
           <Image
             src="/medifold_logo.png"
             alt="Medifold Logo"
-            width={48}
-            height={48}
+            width={36}
+            height={36}
             className="object-contain [filter:brightness(0)_saturate(100%)_invert(48%)_sepia(61%)_saturate(6457%)_hue-rotate(175deg)_brightness(101%)_contrast(102%)] dark:[filter:brightness(0)_saturate(100%)_invert(80%)_sepia(32%)_saturate(4619%)_hue-rotate(178deg)_brightness(101%)_contrast(105%)]"
           />
-          <span className="sr-only">Medifold</span>
+          <span className="ml-2 text-lg font-semibold text-[#0596D5]">Medifold</span>
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
