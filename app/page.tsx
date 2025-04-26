@@ -3,10 +3,10 @@ import MobileLayout from "@/components/mobile-layout";
 import UploadButton from "@/components/upload-button";
 import JournalEntry from "@/components/journal-entry";
 import { Card } from "@/components/ui/card";
-import { HomePage } from "@/components/home-page";
 import { createClient } from "@/utils/supabase/server"; // Import Supabase server client
 import { cookies } from "next/headers"; // Import cookies
 import type { User } from "@supabase/supabase-js"; // Import User type
+import { redirect } from "next/navigation"; // Import redirect
 
 // Placeholder for your actual authentication check function/hook
 // Replace this with your real authentication logic
@@ -32,8 +32,8 @@ export default async function Home() {
   const user = data?.user; // Get the user object
 
   if (!user) {
-    // Check if user exists
-    return <HomePage />; // Show landing page if not logged in
+    // Redirect unauthenticated users to onboarding page
+    redirect("/onboarding");
   }
 
   // Show the main app content if logged in, passing the user object

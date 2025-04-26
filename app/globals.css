@@ -20,8 +20,8 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 224 82% 53%; /* Blue (derived from #2563eb) */
-    --primary-foreground: 0 0% 98%; /* Near white */
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -49,57 +49,44 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    /* Updated Dark Theme Palette */
-    --background: 240 5% 10%; /* Dark blue-gray */
-    --foreground: 240 5% 90%; /* Off-white */
-
-    --card: 240 5% 15%; /* Slightly lighter surface */
-    --card-foreground: 240 5% 90%; /* Off-white */
-
-    --popover: 240 5% 15%; /* Slightly lighter surface */
-    --popover-foreground: 240 5% 90%; /* Off-white */
-
-    --primary: 210 40% 60%; /* Brighter Blue for primary actions */
-    --primary-foreground: 210 40% 10%; /* Dark blue for text on primary */
-
-    --secondary: 240 5% 25%; /* Lighter gray for secondary elements */
-    --secondary-foreground: 240 5% 95%; /* Near white for text on secondary */
-
-    --muted: 240 5% 20%; /* Muted surface */
-    --muted-foreground: 240 5% 60%; /* Dimmer gray text */
-
-    --accent: 240 5% 20%; /* Muted accent */
-    --accent-foreground: 240 5% 90%; /* Off-white */
-
-    --destructive: 0 70% 50%; /* Keep destructive red, maybe slightly brighter */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5% 25%; /* Subtle border */
-    --input: 240 5% 20%; /* Input background */
-    --ring: 210 40% 60%; /* Ring matches primary */
-
-    /* Chart colors might need adjustment too, leaving for now */
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-
-    /* Sidebar specific colors - adapt based on general theme */
-    --sidebar-background: 240 5% 12%; /* Slightly different from main bg */
-    --sidebar-foreground: 240 5% 80%; /* Slightly dimmer text */
-    --sidebar-primary: 210 40% 60%; /* Match primary */
-    --sidebar-primary-foreground: 210 40% 10%; /* Match primary-foreground */
-    --sidebar-accent: 240 5% 25%; /* Accent surface in sidebar */
-    --sidebar-accent-foreground: 240 5% 95%; /* Text on sidebar accent */
-    --sidebar-border: 240 5% 20%; /* Sidebar border */
-    --sidebar-ring: 210 40% 60%; /* Match ring */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    /* Default border removed - apply borders explicitly where needed */
   }
   body {
     @apply bg-background text-foreground;
