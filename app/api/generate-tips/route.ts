@@ -221,35 +221,55 @@ export async function GET() {
     The data includes notes, file metadata, and potentially image/PDF content. Timestamps indicate when data was recorded or added.
     - **Notes:** User-reported feelings, symptoms, updates. Timestamps indicate when the note was recorded.
     - **Files:** Categorized health data (diet, selfies, health) with subcategories providing more detail.
-        - **diet:** Files related to the user's food consumption (e.g., receipts, food logs, nutritional info). **Crucially, this represents *what the user consumed*, not necessarily what is optimal. Analyze this data critically in light of other health information.**
+        - **diet:** Files related to the user's food consumption (e.g., receipts, food logs, nutritional info). **Use this data primarily to understand the user's *dietary habits and patterns* (e.g., frequent consumption of certain foods, potential lack of others). DO NOT assume these items are currently available ingredients. Base diet tips on nutritional needs or health conditions indicated by the *overall* data analysis (including health files and notes), using these diet files as evidence for current habits, not as a limitation.**
         - **selfies:** Images of the user. Analyze for visual health cues.
         - **health:** Medical documents (e.g., lab results, blood work results, doctor notes, prescriptions, wearable data). Analyze content for relevant health information.
     - **Current Time:** Provided for temporal reference.
 
     **Strict Rules for Tip Generation:**
-    1.  **Prioritize Recency:** Recent data points (closer to the 'Current Date & Time') are significantly more important. Focus tips on the most current information. (e.g., a recent health document takes precedence over older, unrelated notes).
-    2.  **Strict Grounding & Critical Analysis:** Base EVERY tip EXCLUSIVELY on the provided data. Analyze the data critically – especially diet data. Do not assume consumption patterns are healthy; suggest improvements if the data indicates a need. DO NOT invent information.
-    3.  **User-Friendly Referencing:** In the 'reason' field of the JSON output, explain the basis for the tip in user-friendly terms, referring to the type and timing of the data, but *without* exposing raw filenames or exact technical timestamps. Examples:
-        - Correct: "Based on your recent grocery shopping showing frequent high-sugar purchases."
+    1.  **Holistic Analysis:** Synthesize information from ALL provided data points (notes, files, images, PDFs). Do not overly focus on a single piece of information. Your insights should reflect a comprehensive understanding of the user's context.
+    2.  **Nuanced Recency Prioritization:** While recent data (e.g., from the last few days or weeks) is generally more significant, critically evaluate the relevance of all data. A health report from 5 days ago is likely still very important, even if a note was added yesterday. Older data (e.g., several months) might be less relevant unless it indicates a chronic condition or baseline. Use your judgment to weigh the importance based on the data type and content. For diet data specifically, look for trends over time, not just the most recent meal.
+    3.  **Strict Grounding & Critical Analysis:** Base EVERY tip EXCLUSIVELY on the provided data. Analyze the data critically – especially diet data (focusing on habits and nutritional implications, see above). Do not assume consumption patterns are healthy; suggest improvements if the data indicates a need. DO NOT invent information.
+    4.  **User-Friendly Referencing:** In the 'reason' field of the JSON output, explain the basis for the tip in user-friendly terms, referring to the type and timing of the data, but *without* exposing raw filenames or exact technical timestamps. Examples:
+        - Correct: "Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks."
         - Correct: "Based on your recent note about feeling tired."
-        - Correct: "Based on the lab report you uploaded recently."
+        - Correct: "Based on the lab report you uploaded last week."
         - Correct: "Based on analyzing the meal photo from yesterday."
         - Incorrect: "Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z."
         (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
-    4.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent note mentioning poor sleep warrants a sleep tip).
-    5.  **Individuality & Actionability:** Focus on tips tailored to *this user's* unique situation (especially recent data and critical analysis of diet/habits). Tips should be concrete actions the user can take.
-    6.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
+    5.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent pattern of notes mentioning poor sleep warrants a sleep tip).
+    6.  **Individuality & Actionability:** Focus on tips tailored to *this user's* unique situation (synthesizing recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
+    7.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
 
         {
-          "dietTips": [ { "tip": "...", "reason": "[User-friendly reason based on specific data]" } ],
-          "habitTips": [ { "tip": "...", "reason": "[User-friendly reason based on specific data]" } ],
-          "supplementProposals": [ { "supplement": "...", "reason": "[User-friendly reason based on specific data]" } ],
-          "shoppingList": [ { "item": "...", "reason": "To support [specific diet tip reference]" } ]
+          "dietTips": [ // Provide exactly 5 items
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" }
+          ],
+          "habitTips": [ // Provide exactly 5 items
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "tip": "...", "reason": "[User-friendly reason based on specific data]" }
+          ],
+          "supplementProposals": [ // Provide exactly 5 items
+             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
+             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" }
+           ],
+          "shoppingList": [ // Derive items from dietTips; no fixed item limit
+            { "item": "...", "reason": "To support [specific diet tip reference]" }
+            // Add more items as needed based on the diet tips
+          ]
         }
 
-    Provide exactly three items for dietTips, three for habitTips, and three for supplementProposals.
-    The shoppingList should be directly derived from the dietTips.
-    Keep tips concise but clearly linked to the data, prioritizing recent findings.`;
+    Keep tips concise but clearly linked to the synthesized data, prioritizing relevant findings based on your nuanced analysis.`;
 
     const userMessageContent = userPromptParts; // The array of text/image/file parts
 

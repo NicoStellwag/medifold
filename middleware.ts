@@ -15,8 +15,9 @@ export const config = {
      * - api (API routes)
      * - auth (auth routes like login, register, callback)
      * - images/ (your image directory if any)
+     * - report (report page)
      * - / (the root path - already handled by page.tsx)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api|auth|images|^/$).+)",
+    "/((?!_next/static|_next/image|favicon.ico|api|auth|images|report|^/$).+)",
   ],
 };
