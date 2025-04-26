@@ -16,6 +16,8 @@ import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 interface HealthTips {
+  statusQuo: string;
+  painPoints: { point: string; reason: string }[];
   dietTips: { tip: string; reason: string }[];
   habitTips: { tip: string; reason: string }[];
   supplementProposals: { supplement: string; reason: string }[];
@@ -105,9 +107,39 @@ export default function ReportPage() {
     </Card>
   );
 
+  const renderPainPointsList = (
+    items: { point: string; reason: string }[],
+    title: string,
+    keyPrefix: string
+  ) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {items.length > 0 ? (
+          <ul className="list-disc space-y-3 pl-5">
+            {items.map((item, index) => (
+              <li key={`${keyPrefix}-${index}`}>
+                <span className="font-medium">{item.point}:</span>
+                <span className="block text-sm text-muted-foreground">
+                  Reason: {item.reason}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No {title.toLowerCase()} identified.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const renderLoadingSkeletons = () => (
     <div className="space-y-6">
-      {[...Array(4)].map((_, i) => (
+      {[...Array(5)].map((_, i) => (
         <Card key={`skeleton-card-${i}`}>
           <CardHeader>
             <Skeleton className="h-6 w-1/2 rounded" />
@@ -140,6 +172,23 @@ export default function ReportPage() {
 
         {!isLoading && !error && tipsData && (
           <div className="space-y-6">
+            {/* Status Quo Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Status Quo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{tipsData.statusQuo}</p>
+              </CardContent>
+            </Card>
+
+            {/* Pain Points Section */}
+            {renderPainPointsList(
+              tipsData.painPoints,
+              "Identified Pain Points",
+              "painpoint"
+            )}
+
             {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
             {renderTipList(
               tipsData.habitTips,

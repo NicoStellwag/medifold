@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import OpenAI from "openai";
-import {
-  ChatCompletionContentPart,
-  ChatCompletionContentPartImage,
-  ChatCompletionContentPartText,
-} from "openai/resources/index.mjs";
+import { ChatCompletionContentPart } from "openai/resources/index.mjs";
 import { FileObject } from "openai/resources/files.mjs";
 
 // Ensure your OPENAI_API_KEY environment variable is set
@@ -14,6 +10,8 @@ const openai = new OpenAI();
 
 // Define the expected structure for the AI's response
 interface HealthTips {
+  statusQuo: string; // Added: Quick summary of current state
+  painPoints: { point: string; reason: string }[]; // Added: Key areas needing attention
   dietTips: { tip: string; reason: string }[];
   habitTips: { tip: string; reason: string }[];
   supplementProposals: { supplement: string; reason: string }[];
@@ -215,7 +213,7 @@ export async function GET() {
     );
 
     // 4. Construct OpenAI Prompt Messages
-    const systemPrompt = `You are a highly specialized AI health assistant. Your ONLY task is to analyze the provided user health data context (notes, file metadata, images, PDFs) and generate specific, actionable, and highly personalized tips. You MUST adhere to the following strict rules:
+    const systemPrompt = `You are a highly specialized AI health assistant. Your ONLY task is to analyze the provided user health data context (notes, file metadata, images, PDFs) and generate a health status summary and specific, actionable, and highly personalized tips. You MUST adhere to the following strict rules:
 
     **Understanding the Data Context:**
     The data includes notes, file metadata, and potentially image/PDF content. Timestamps indicate when data was recorded or added.
@@ -223,53 +221,42 @@ export async function GET() {
     - **Files:** Categorized health data (diet, selfies, health) with subcategories providing more detail.
         - **diet:** Files related to the user's food consumption (e.g., receipts, food logs, nutritional info). **Use this data primarily to understand the user's *dietary habits and patterns* (e.g., frequent consumption of certain foods, potential lack of others). DO NOT assume these items are currently available ingredients. Base diet tips on nutritional needs or health conditions indicated by the *overall* data analysis (including health files and notes), using these diet files as evidence for current habits, not as a limitation.**
         - **selfies:** Images of the user. Analyze for visual health cues.
-        - **health:** Medical documents (e.g., lab results, blood work results, doctor notes, prescriptions, wearable data). Analyze content for relevant health information.
+        - **health:** Medical documents (e.g., lab results, blood work results, doctor notes, prescriptions, wearable data). **Crucially, analyze the CONTENT of any attached PDF files within this category, as they often contain vital health information like lab results or doctor's notes. Give PDF content equal importance to images and notes for a comprehensive understanding.** Analyze content for relevant health information.
     - **Current Time:** Provided for temporal reference.
 
-    **Strict Rules for Tip Generation:**
-    1.  **Holistic Analysis:** Synthesize information from ALL provided data points (notes, files, images, PDFs). Do not overly focus on a single piece of information. Your insights should reflect a comprehensive understanding of the user's context.
-    2.  **Nuanced Recency Prioritization:** While recent data (e.g., from the last few days or weeks) is generally more significant, critically evaluate the relevance of all data. A health report from 5 days ago is likely still very important, even if a note was added yesterday. Older data (e.g., several months) might be less relevant unless it indicates a chronic condition or baseline. Use your judgment to weigh the importance based on the data type and content. For diet data specifically, look for trends over time, not just the most recent meal.
-    3.  **Strict Grounding & Critical Analysis:** Base EVERY tip EXCLUSIVELY on the provided data. Analyze the data critically – especially diet data (focusing on habits and nutritional implications, see above). Do not assume consumption patterns are healthy; suggest improvements if the data indicates a need. DO NOT invent information.
-    4.  **User-Friendly Referencing:** In the 'reason' field of the JSON output, explain the basis for the tip in user-friendly terms, referring to the type and timing of the data, but *without* exposing raw filenames or exact technical timestamps. Examples:
-        - Correct: "Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks."
-        - Correct: "Based on your recent note about feeling tired."
-        - Correct: "Based on the lab report you uploaded last week."
-        - Correct: "Based on analyzing the meal photo from yesterday."
-        - Incorrect: "Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z."
-        (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
-    5.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent pattern of notes mentioning poor sleep warrants a sleep tip).
-    6.  **Individuality & Actionability:** Focus on tips tailored to *this user's* unique situation (synthesizing recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
-    7.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
+    **Strict Rules for Response Generation:**
+    1.  **Status Quo Summary:** Begin with a concise (1-2 sentence) 'statusQuo' summarizing the user's current health situation based *only* on the provided data.
+    2.  **Pain Points Identification:** Identify 2-4 key 'painPoints' (areas needing attention or potential issues) derived *directly* from analyzing the data. For each pain point, provide a brief 'reason' referencing the supporting data in a user-friendly way (similar to tip reasons).
+    3.  **Holistic Analysis for Tips:** Synthesize information from ALL provided data points (notes, files, images, PDFs) for generating tips. **Ensure you are analyzing the *content* of images AND PDFs where provided, not just their metadata.** Do not overly focus on a single piece of information. Your insights should reflect a comprehensive understanding of the user's context.
+    4.  **Nuanced Recency Prioritization:** While recent data (e.g., from the last few days or weeks) is generally more significant, critically evaluate the relevance of all data. A health report from 5 days ago is likely still very important, even if a note was added yesterday. Older data (e.g., several months) might be less relevant unless it indicates a chronic condition or baseline. Use your judgment to weigh the importance based on the data type and content. For diet data specifically, look for trends over time, not just the most recent meal.
+    5.  **Strict Grounding & Critical Analysis:** Base EVERY pain point and tip EXCLUSIVELY on the provided data. Analyze the data critically – especially diet data (focusing on habits and nutritional implications). Do not assume consumption patterns are healthy; suggest improvements if the data indicates a need. DO NOT invent information.
+    6.  **User-Friendly Referencing:** In the 'reason' field for pain points and tips, explain the basis in user-friendly terms, referring to the type and timing of the data, but *without* exposing raw filenames or exact technical timestamps. Examples:
+        - Correct: \"Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks.\"\n        - Correct: \"Based on your recent note about feeling tired.\"\n        - Correct: \"Based on the lab report you uploaded last week.\"\n        - Correct: \"Based on analyzing the meal photo from yesterday.\"\n        - Incorrect: \"Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z.\"\n        (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
+    7.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent pattern of notes mentioning poor sleep warrants a sleep tip or mentioning it as a pain point).
+    8.  **Individuality & Actionability:** Focus on tips tailored to *this user\'s* unique situation (synthesizing recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
+    9.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
 
         {
-          "dietTips": [ // Provide exactly 5 items
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" }
+          \"statusQuo\": \"[1-2 sentence summary based on data]\",
+          \"painPoints\": [ // Provide 2-4 items
+            { \"point\": \"[Identified issue]\", \"reason\": \"[User-friendly reason based on specific data]\" },
+            { \"point\": \"[Identified issue]\", \"reason\": \"[User-friendly reason based on specific data]\" }
+            // ... potentially more points up to 4
           ],
-          "habitTips": [ // Provide exactly 5 items
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "tip": "...", "reason": "[User-friendly reason based on specific data]" }
-          ],
-          "supplementProposals": [ // Provide exactly 5 items
-             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" },
-             { "supplement": "...", "reason": "[User-friendly reason based on specific data]" }
-           ],
-          "shoppingList": [ // Derive items from dietTips; no fixed item limit
-            { "item": "...", "reason": "To support [specific diet tip reference]" }
+          \"dietTips\": [ // Provide exactly 5 items
+             { \"tip\": \"...\", \"reason\": \"[User-friendly reason based on specific data]\" },
+             // ... 4 more diet tips
+          ],\n          \"habitTips\": [ // Provide exactly 5 items\n             { \"tip\": \"...\", \"reason\": \"[User-friendly reason based on specific data]\" },
+             // ... 4 more habit tips
+          ],\n          \"supplementProposals\": [ // Provide exactly 5 items\n             { \"supplement\": \"...\", \"reason\": \"[User-friendly reason based on specific data]\" },
+             // ... 4 more supplement proposals
+           ],\n          \"shoppingList\": [ // Derive items from dietTips; no fixed item limit
+            { \"item\": \"...\", \"reason\": \"To support [specific diet tip reference]\" }
             // Add more items as needed based on the diet tips
           ]
         }
 
-    Keep tips concise but clearly linked to the synthesized data, prioritizing relevant findings based on your nuanced analysis.`;
+    Keep summaries, pain points, and tips concise but clearly linked to the synthesized data, prioritizing relevant findings based on your nuanced analysis.`;
 
     const userMessageContent = userPromptParts; // The array of text/image/file parts
 
@@ -289,6 +276,8 @@ export async function GET() {
     if (!jsonResponse) throw new Error("OpenAI response was empty.");
     const parsedTips: HealthTips = JSON.parse(jsonResponse);
     if (
+      !parsedTips.statusQuo || // Check new field
+      !parsedTips.painPoints || // Check new field
       !parsedTips.dietTips ||
       !parsedTips.habitTips ||
       !parsedTips.supplementProposals ||
