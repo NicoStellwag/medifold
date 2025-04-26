@@ -12,10 +12,8 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -24,52 +22,6 @@ import {
   HealthSubcategory,
 } from "@/lib/image-categories";
 import { cn } from "@/lib/utils";
-
-// Helper function to generate natural language success messages
-function generateSuccessMessage(result: {
-  file_name: string;
-  category: TopLevelCategory | string | null;
-  subcategory: DietSubcategory | HealthSubcategory | string | null;
-}): string {
-  const { category, subcategory } = result;
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-  if (!category) {
-    return `Added ${result.file_name} (Uncategorized).`;
-  }
-
-  switch (category) {
-    case TopLevelCategory.Diet:
-      const dietSub = subcategory as DietSubcategory | null;
-      return `Added ${
-        dietSub === DietSubcategory.Receipts
-          ? "a receipt"
-          : dietSub === DietSubcategory.FoodImages
-          ? "a food image"
-          : "a diet file"
-      } to ${capitalize(category)}.`;
-
-    case TopLevelCategory.Selfies:
-      return `Added a selfie to ${capitalize(category)}.`;
-
-    case TopLevelCategory.Health:
-      const healthSub = subcategory as HealthSubcategory | null;
-      let healthFileType = "a health document";
-      if (healthSub === HealthSubcategory.PatientRecords)
-        healthFileType = "a patient record";
-      else if (healthSub === HealthSubcategory.DiagnosticReports)
-        healthFileType = "a diagnostic report";
-      else if (healthSub === HealthSubcategory.Prescriptions)
-        healthFileType = "a prescription";
-      else if (healthSub === HealthSubcategory.SurgicalDocuments)
-        healthFileType = "a surgical document";
-      return `Added ${healthFileType} to ${capitalize(category)}.`;
-
-    default:
-      const catDisplay = capitalize(category);
-      return `Added a file to ${catDisplay}.`;
-  }
-}
 
 export default function UploadButton() {
   const [files, setFiles] = useState<File[]>([]);
@@ -176,15 +128,6 @@ export default function UploadButton() {
       setIsDragging(false); // Reset drag state
     }
   };
-
-  // Helper function to convert File to base64
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
 
   const uploadFiles = async () => {
     if (files.length === 0 || !userId || isUploading) return;
@@ -326,10 +269,6 @@ export default function UploadButton() {
 
       const uploadResults = await Promise.all(uploadPromises);
 
-      // --- Format Success Toast Description ---
-      const successMessages = uploadResults.map(generateSuccessMessage);
-      const descriptionText = successMessages.join("\n");
-
       // --- Success Notification & Cleanup ---
       setOpen(false);
       setFiles([]);
@@ -358,43 +297,6 @@ export default function UploadButton() {
     if (file.type === "application/pdf")
       return <FileText className="h-5 w-5" />;
     return <FileType className="h-5 w-5" />;
-  };
-
-  const getCategoryBadge = (
-    category: string | null,
-    subcategory: string | null
-  ) => {
-    switch (category) {
-      case TopLevelCategory.Diet:
-        return (
-          <Badge
-            variant="outline"
-            className="border-green-200 bg-green-50 text-green-700"
-          >
-            🍎 Diet {subcategory ? `(${subcategory})` : ""}
-          </Badge>
-        );
-      case TopLevelCategory.Selfies:
-        return (
-          <Badge
-            variant="outline"
-            className="border-blue-200 bg-blue-50 text-blue-700"
-          >
-            📸 Selfies
-          </Badge>
-        );
-      case TopLevelCategory.Health:
-        return (
-          <Badge
-            variant="outline"
-            className="border-red-200 bg-red-50 text-red-700"
-          >
-            🏥 Health {subcategory ? `(${subcategory})` : ""}
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{category || "Unknown"}</Badge>;
-    }
   };
 
   return (
