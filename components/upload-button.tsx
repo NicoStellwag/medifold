@@ -24,37 +24,37 @@ import {
   HealthSubcategory,
 } from "@/lib/image-categories";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 // Helper function to generate natural language success messages
 function generateSuccessMessage(result: {
   file_name: string;
-  category: TopLevelCategory | string;
+  category: TopLevelCategory | string | null;
   subcategory: DietSubcategory | HealthSubcategory | string | null;
 }): string {
   const { category, subcategory } = result;
-
-  // Helper to capitalize first letter (optional, depends on desired display)
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  if (!category) {
+    return `Added ${result.file_name} (Uncategorized).`;
+  }
 
   switch (category) {
     case TopLevelCategory.Diet:
-      const dietSub = subcategory as DietSubcategory;
+      const dietSub = subcategory as DietSubcategory | null;
       return `Added ${
         dietSub === DietSubcategory.Receipts
           ? "a receipt"
           : dietSub === DietSubcategory.FoodImages
           ? "a food image"
-          : "a file"
+          : "a diet file"
       } to ${capitalize(category)}.`;
 
     case TopLevelCategory.Selfies:
-      // No subcategory for selfies
       return `Added a selfie to ${capitalize(category)}.`;
 
     case TopLevelCategory.Health:
-      const healthSub = subcategory as HealthSubcategory;
-      let healthFileType = "a document"; // Default
+      const healthSub = subcategory as HealthSubcategory | null;
+      let healthFileType = "a health document";
       if (healthSub === HealthSubcategory.PatientRecords)
         healthFileType = "a patient record";
       else if (healthSub === HealthSubcategory.DiagnosticReports)
@@ -66,9 +66,7 @@ function generateSuccessMessage(result: {
       return `Added ${healthFileType} to ${capitalize(category)}.`;
 
     default:
-      // Use category if it's a string, otherwise provide generic message
-      const catDisplay =
-        typeof category === "string" ? capitalize(category) : "Uncategorized";
+      const catDisplay = capitalize(category);
       return `Added a file to ${catDisplay}.`;
   }
 }
@@ -197,53 +195,74 @@ export default function UploadButton() {
 
     // --- Process uploads ---
     try {
-      const uploadPromises = filesToUpload.map(async (file, index) => {
-        let category: TopLevelCategory | string = "other";
+      const uploadPromises = filesToUpload.map(async (file) => {
+        let category: TopLevelCategory | string | null = null;
         let subcategory: DietSubcategory | HealthSubcategory | string | null =
           null;
 
-        // --- Image Classification Logic ---
-        if (file.type.startsWith("image/")) {
-          try {
-            const imageBase64 = await fileToBase64(file);
-            const response = await fetch("/api/classify-image", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ imageBase64 }),
-            });
+        // --- Classification Logic (Moved to Backend API) ---
+        try {
+          const formData = new FormData();
+          formData.append("file", file); // Send the actual file
 
-            if (!response.ok) {
+          // Use the new API endpoint
+          const response = await fetch("/api/classify-file", {
+            method: "POST",
+            body: formData, // Send FormData, headers are set automatically
+          });
+
+          const contentType = response.headers.get("content-type");
+
+          if (!response.ok) {
+            let errorDetails = `Status: ${response.status}`;
+            if (contentType && contentType.includes("application/json")) {
+              // Only parse as JSON if the content type is correct
               const errorData = await response.json();
-              console.warn(
-                `Classification failed for ${file.name}: ${response.status} ${
-                  errorData?.error || "Unknown error"
-                }`
-              );
-              category = TopLevelCategory.Selfies;
-              subcategory = null;
+              errorDetails += `, Error: ${
+                errorData?.error || "Unknown JSON error"
+              }`;
             } else {
+              // Handle non-JSON error response (e.g., HTML error page)
+              const errorText = await response.text();
+              errorDetails += `, Response: ${errorText.substring(0, 100)}...`; // Log snippet of the HTML/text
+            }
+            console.warn(
+              `Classification failed for ${file.name}: ${errorDetails}`
+            );
+            // Keep category/subcategory null as classification failed
+          } else {
+            // Check content type even for successful responses
+            if (contentType && contentType.includes("application/json")) {
               const classification = await response.json();
-              category = classification.category as TopLevelCategory;
+              category = (classification.category as TopLevelCategory) || null;
               subcategory = classification.subcategory as
                 | DietSubcategory
                 | HealthSubcategory
                 | null;
+            } else {
+              // Handle unexpected non-JSON success response
+              const responseText = await response.text();
+              console.warn(
+                `Classification succeeded for ${
+                  file.name
+                } but received unexpected non-JSON response: ${responseText.substring(
+                  0,
+                  100
+                )}...`
+              );
+              // Treat as unclassified or decide on specific handling
+              category = null;
+              subcategory = null;
             }
-          } catch (classifyError: any) {
-            console.error(
-              `Error during classification call for ${file.name}:`,
-              classifyError
-            );
-            category = TopLevelCategory.Selfies;
-            subcategory = null;
           }
-        } else if (file.type === "application/pdf") {
-          category = TopLevelCategory.Health;
-          subcategory = HealthSubcategory.Other;
-        } else {
-          // Keep default 'other'
+        } catch (classifyError: any) {
+          console.error(
+            `Error during classification API call for ${file.name}:`,
+            classifyError
+          );
+          // Keep category/subcategory null on network or other fetch errors
+          category = null;
+          subcategory = null;
         }
         // --- End Classification Logic ---
 
@@ -251,6 +270,7 @@ export default function UploadButton() {
         const fileName = `${uuidv4()}.${fileExt}`;
         const filePath = `${userId}/${fileName}`;
 
+        // --- Storage Upload ---
         const { data: storageData, error: storageError } =
           await supabase.storage.from("user-uploads").upload(filePath, file, {
             cacheControl: "3600",
@@ -261,7 +281,7 @@ export default function UploadButton() {
           console.error("Storage error:", storageError);
           throw new Error(
             `Storage error for ${file.name}: ${storageError.message}`
-          ); // Throw specific error
+          );
         }
 
         // --- Database Insertion ---
@@ -269,8 +289,8 @@ export default function UploadButton() {
           .from("uploaded_files")
           .insert({
             user_id: userId,
-            file_name: file.name,
-            storage_path: filePath,
+            file_name: file.name, // Store original file name
+            storage_path: filePath, // Store the unique path in storage
             mime_type: file.type,
             size_bytes: file.size,
             category: category,
@@ -280,18 +300,21 @@ export default function UploadButton() {
 
         if (dbError) {
           console.error("Database error:", dbError);
-          // Consider rollback/cleanup? Maybe delete the uploaded file?
           try {
             await supabase.storage.from("user-uploads").remove([filePath]);
+            console.log(`Rolled back storage for ${filePath} due to DB error.`);
           } catch (removeError) {
-            console.error("Failed to remove file after DB error:", removeError);
+            console.error(
+              `Failed to remove file ${filePath} from storage after DB error:`,
+              removeError
+            );
           }
           throw new Error(
             `Database error for ${file.name}: ${dbError.message}`
           );
         }
 
-        // Return classification results along with other data
+        // Return data including classification for success message generation
         return {
           file_name: file.name,
           category,
@@ -305,27 +328,16 @@ export default function UploadButton() {
 
       // --- Format Success Toast Description ---
       const successMessages = uploadResults.map(generateSuccessMessage);
-      const descriptionText = successMessages.join("\n"); // Join with newlines
+      const descriptionText = successMessages.join("\n");
 
       // --- Success Notification & Cleanup ---
-      toast.success("Upload Complete!", {
-        description: `${totalFiles} file${
-          totalFiles > 1 ? "s" : ""
-        } uploaded successfully.\n${descriptionText}`,
-        duration: 5000,
-      });
-      setOpen(false); // Close dialog on success
+      setOpen(false);
+      setFiles([]);
+      setPreviews([]);
     } catch (error: any) {
-      // --- Failure Notification ---
       console.error("Error during upload process:", error);
-      toast.error("Upload Failed", {
-        description: `An error occurred during upload: ${
-          error.message || "Unknown error"
-        }. Please try again.`,
-        duration: 5000,
-      });
     } finally {
-      setIsUploading(false); // Ensure uploading state is reset
+      setIsUploading(false);
     }
   };
 
@@ -352,7 +364,6 @@ export default function UploadButton() {
     category: string | null,
     subcategory: string | null
   ) => {
-    // Updated to use TopLevelCategory enum for better type safety
     switch (category) {
       case TopLevelCategory.Diet:
         return (
@@ -363,7 +374,7 @@ export default function UploadButton() {
             🍎 Diet {subcategory ? `(${subcategory})` : ""}
           </Badge>
         );
-      case TopLevelCategory.Selfies: // Updated from "photo"
+      case TopLevelCategory.Selfies:
         return (
           <Badge
             variant="outline"
@@ -382,7 +393,6 @@ export default function UploadButton() {
           </Badge>
         );
       default:
-        // Add a badge for 'other' or unknown categories if desired
         return <Badge variant="secondary">{category || "Unknown"}</Badge>;
     }
   };
