@@ -1,32 +1,65 @@
 "use client";
 
-import { useState } from 'react';
-import { useOnboarding } from '@/context/OnboardingContext';
+import { useState, useEffect } from "react";
+import { useOnboarding } from "@/context/OnboardingContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Ruler, Weight, Users, CalendarDays } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Ruler, Weight, Users, CalendarDays } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const HealthMetricsScreen = () => {
   const { nextStep, prevStep, skipTo } = useOnboarding();
-  // TODO: Consider moving metrics state to context if needed elsewhere
-  const [sex, setSex] = useState('');
-  const [height, setHeight] = useState('175');
-  const [weight, setWeight] = useState('70');
-  const [age, setAge] = useState('30');
+  const [sex, setSex] = useState("");
+  const [height, setHeight] = useState("175");
+  const [weight, setWeight] = useState("70");
+  const [age, setAge] = useState("30");
+
+  // Load values from sessionStorage if available
+  useEffect(() => {
+    const storedSex = sessionStorage.getItem("onboarding_sex");
+    const storedHeight = sessionStorage.getItem("onboarding_height");
+    const storedWeight = sessionStorage.getItem("onboarding_weight");
+    const storedAge = sessionStorage.getItem("onboarding_age");
+
+    if (storedSex) setSex(storedSex);
+    if (storedHeight) setHeight(storedHeight);
+    if (storedWeight) setWeight(storedWeight);
+    if (storedAge) setAge(storedAge);
+  }, []);
 
   const handleContinue = () => {
-    // TODO: Save basic info (sex, height, weight, age)
-    console.log("Basic Info:", { sex, height, weight, age });
-    // Add validation if needed
+    // Save metrics to sessionStorage
+    if (sex) sessionStorage.setItem("onboarding_sex", sex);
+    sessionStorage.setItem("onboarding_height", height);
+    sessionStorage.setItem("onboarding_weight", weight);
+    sessionStorage.setItem("onboarding_age", age);
+
     nextStep();
   };
 
   const handleSkip = () => {
-    skipTo('email'); // Skip directly to email step
+    // Clear values from sessionStorage if skipping
+    sessionStorage.removeItem("onboarding_sex");
+    sessionStorage.removeItem("onboarding_height");
+    sessionStorage.removeItem("onboarding_weight");
+    sessionStorage.removeItem("onboarding_age");
+
+    skipTo("email"); // Skip directly to email step
   };
 
   const container = {
@@ -35,22 +68,22 @@ export const HealthMetricsScreen = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const item = {
     hidden: { y: 20, opacity: 0 },
-    show: { 
-      y: 0, 
+    show: {
+      y: 0,
       opacity: 1,
       transition: {
         type: "spring",
         stiffness: 300,
-        damping: 24
-      }
-    }
+        damping: 24,
+      },
+    },
   };
 
   return (
@@ -68,7 +101,7 @@ export const HealthMetricsScreen = () => {
           className="relative z-10"
         >
           <CardHeader className="text-center p-6 pt-8">
-            <motion.div 
+            <motion.div
               variants={item}
               className="relative p-1 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full mb-6 mx-auto"
             >
@@ -77,18 +110,22 @@ export const HealthMetricsScreen = () => {
               </div>
             </motion.div>
             <motion.div variants={item}>
-              <CardTitle className="text-2xl font-bold text-cyan-600 mb-2">Basic Health Info</CardTitle>
+              <CardTitle className="text-2xl font-bold text-cyan-600 mb-2">
+                Basic Health Info
+              </CardTitle>
             </motion.div>
             <motion.div variants={item}>
-              <CardDescription className="text-gray-600">Help us personalize your health insights</CardDescription>
+              <CardDescription className="text-gray-600">
+                Help us personalize your health insights
+              </CardDescription>
             </motion.div>
           </CardHeader>
           <CardContent className="p-8 space-y-5">
-            <motion.div 
-              variants={item} 
-              className="space-y-2 relative"
-            >
-              <Label htmlFor="sex" className="flex items-center mb-2 text-gray-700">
+            <motion.div variants={item} className="space-y-2 relative">
+              <Label
+                htmlFor="sex"
+                className="flex items-center mb-2 text-gray-700"
+              >
                 <div className="p-1.5 bg-indigo-100 rounded-full mr-2">
                   <Users className="h-5 w-5 text-indigo-600" />
                 </div>
@@ -106,11 +143,11 @@ export const HealthMetricsScreen = () => {
               </Select>
             </motion.div>
 
-            <motion.div 
-              variants={item} 
-              className="space-y-2 relative"
-            >
-              <Label htmlFor="height" className="flex items-center mb-2 text-gray-700">
+            <motion.div variants={item} className="space-y-2 relative">
+              <Label
+                htmlFor="height"
+                className="flex items-center mb-2 text-gray-700"
+              >
                 <div className="p-1.5 bg-blue-100 rounded-full mr-2">
                   <Ruler className="h-5 w-5 text-blue-600" />
                 </div>
@@ -126,11 +163,11 @@ export const HealthMetricsScreen = () => {
               />
             </motion.div>
 
-            <motion.div 
-              variants={item} 
-              className="space-y-2 relative"
-            >
-              <Label htmlFor="weight" className="flex items-center mb-2 text-gray-700">
+            <motion.div variants={item} className="space-y-2 relative">
+              <Label
+                htmlFor="weight"
+                className="flex items-center mb-2 text-gray-700"
+              >
                 <div className="p-1.5 bg-green-100 rounded-full mr-2">
                   <Weight className="h-5 w-5 text-green-600" />
                 </div>
@@ -146,11 +183,11 @@ export const HealthMetricsScreen = () => {
               />
             </motion.div>
 
-            <motion.div 
-              variants={item} 
-              className="space-y-2 relative"
-            >
-              <Label htmlFor="age" className="flex items-center mb-2 text-gray-700">
+            <motion.div variants={item} className="space-y-2 relative">
+              <Label
+                htmlFor="age"
+                className="flex items-center mb-2 text-gray-700"
+              >
                 <div className="p-1.5 bg-purple-100 rounded-full mr-2">
                   <CalendarDays className="h-5 w-5 text-purple-600" />
                 </div>
@@ -167,31 +204,31 @@ export const HealthMetricsScreen = () => {
             </motion.div>
 
             {/* Buttons */}
-            <motion.div 
+            <motion.div
               variants={item}
               className="flex justify-between items-center pt-6"
             >
-              <Button 
-                variant="ghost" 
-                onClick={prevStep} 
+              <Button
+                variant="ghost"
+                onClick={prevStep}
                 className="text-gray-600 hover:text-gray-800"
               >
                 Back
               </Button>
               <div className="flex items-center space-x-2">
-                <Button 
-                  variant="link" 
-                  onClick={handleSkip} 
+                <Button
+                  variant="link"
+                  onClick={handleSkip}
                   className="text-gray-500 hover:text-gray-700 px-4"
                 >
                   Skip for now
                 </Button>
                 <motion.div
-                  whileHover={{ scale: 1.03 }} 
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  <Button 
-                    onClick={handleContinue} 
+                  <Button
+                    onClick={handleContinue}
                     className="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white font-semibold py-2 px-6"
                   >
                     Continue
@@ -204,4 +241,4 @@ export const HealthMetricsScreen = () => {
       </Card>
     </motion.div>
   );
-}; 
+};
