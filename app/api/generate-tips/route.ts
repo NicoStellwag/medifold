@@ -48,7 +48,7 @@ export async function GET() {
     }
 
     // 2. Fetch User Data (including mime_type for files)
-    const [notesResult, filesResult] = await Promise.all([
+    const [notesResult, filesResult, userProfileResult] = await Promise.all([
       supabase
         .from("notes")
         .select("text, created_at")
@@ -61,15 +61,22 @@ export async function GET() {
         ) // Added mime_type and storage_path
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("users")
+        .select("name, age, weight, height, sex")
+        .eq("id", user.id)
+        .single(),
     ]);
 
     if (notesResult.error)
       throw new Error(`Notes fetch error: ${notesResult.error.message}`);
     if (filesResult.error)
       throw new Error(`Files fetch error: ${filesResult.error.message}`);
+    // For user profile, don't throw an error if not found - it's optional
 
     const notes = notesResult.data || [];
     const files = filesResult.data || [];
+    const userProfile = userProfileResult.data || null;
 
     // 3. Prepare Multimodal Prompt Content Array
     let currentTokenCount = 0;
@@ -78,6 +85,20 @@ export async function GET() {
     // --- Add Current Time and Initial Text ---
     const now = new Date();
     let initialText = `Current Date & Time: ${now.toISOString()}\nUser Health Data Context (sorted by timestamp where available):\n---\n`;
+
+    // --- Add User Profile Data ---
+    if (userProfile) {
+      initialText += "== User Profile ==\n";
+      if (userProfile.name) initialText += `Name: ${userProfile.name}\n`;
+      if (userProfile.age) initialText += `Age: ${userProfile.age} years\n`;
+      if (userProfile.weight)
+        initialText += `Weight: ${userProfile.weight} kg\n`;
+      if (userProfile.height)
+        initialText += `Height: ${userProfile.height} cm\n`;
+      if (userProfile.sex) initialText += `Sex: ${userProfile.sex}\n`;
+      initialText += "---\n";
+    }
+
     userPromptParts.push({ type: "text", text: initialText });
     currentTokenCount += initialText.length / 4;
 
@@ -216,7 +237,8 @@ export async function GET() {
     const systemPrompt = `You are a highly specialized AI health assistant. Your ONLY task is to analyze the provided user health data context (notes, file metadata, images, PDFs) and generate a health status summary and specific, actionable, and highly personalized tips. You MUST adhere to the following strict rules:
 
     **Understanding the Data Context:**
-    The data includes notes, file metadata, and potentially image/PDF content. Timestamps indicate when data was recorded or added.
+    The data includes user profile information, notes, file metadata, and potentially image/PDF content. Timestamps indicate when data was recorded or added.
+    - **User Profile:** Basic demographic information like age, weight, height, and sex. Use this data to personalize recommendations and identify potential health concerns based on standard medical guidelines.
     - **Notes:** User-reported feelings, symptoms, updates. Timestamps indicate when the note was recorded.
     - **Files:** Categorized health data (diet, selfies, health) with subcategories providing more detail.
         - **diet:** Files related to the user's food consumption (e.g., receipts, food logs, nutritional info). **Use this data primarily to understand the user's *dietary habits and patterns* (e.g., frequent consumption of certain foods, potential lack of others). DO NOT assume these items are currently available ingredients. Base diet tips on nutritional needs or health conditions indicated by the *overall* data analysis (including health files and notes), using these diet files as evidence for current habits, not as a limitation.**
@@ -227,13 +249,13 @@ export async function GET() {
     **Strict Rules for Response Generation:**
     1.  **Status Quo Summary:** Begin with a concise (1-2 sentence) 'statusQuo' summarizing the user's current health situation based *only* on the provided data.
     2.  **Pain Points Identification:** Identify 2-4 key 'painPoints' (areas needing attention or potential issues) derived *directly* from analyzing the data. For each pain point, provide a brief 'reason' referencing the supporting data in a user-friendly way (similar to tip reasons).
-    3.  **Holistic Analysis for Tips:** Synthesize information from ALL provided data points (notes, files, images, PDFs) for generating tips. **Ensure you are analyzing the *content* of images AND PDFs where provided, not just their metadata.** Do not overly focus on a single piece of information. Your insights should reflect a comprehensive understanding of the user's context.
+    3.  **Holistic Analysis for Tips:** Synthesize information from ALL provided data points (user profile, notes, files, images, PDFs) for generating tips. **Ensure you are analyzing the *content* of images AND PDFs where provided, not just their metadata.** Do not overly focus on a single piece of information. Your insights should reflect a comprehensive understanding of the user's context.
     4.  **Nuanced Recency Prioritization:** While recent data (e.g., from the last few days or weeks) is generally more significant, critically evaluate the relevance of all data. A health report from 5 days ago is likely still very important, even if a note was added yesterday. Older data (e.g., several months) might be less relevant unless it indicates a chronic condition or baseline. Use your judgment to weigh the importance based on the data type and content. For diet data specifically, look for trends over time, not just the most recent meal.
     5.  **Strict Grounding & Critical Analysis:** Base EVERY pain point and tip EXCLUSIVELY on the provided data. Analyze the data critically – especially diet data (focusing on habits and nutritional implications). Do not assume consumption patterns are healthy; suggest improvements if the data indicates a need. DO NOT invent information.
     6.  **User-Friendly Referencing:** In the 'reason' field for pain points and tips, explain the basis in user-friendly terms, referring to the type and timing of the data, but *without* exposing raw filenames or exact technical timestamps. Examples:
-        - Correct: \"Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks.\"\n        - Correct: \"Based on your recent note about feeling tired.\"\n        - Correct: \"Based on the lab report you uploaded last week.\"\n        - Correct: \"Based on analyzing the meal photo from yesterday.\"\n        - Incorrect: \"Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z.\"\n        (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
+        - Correct: \"Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks.\"\n        - Correct: \"Based on your recent note about feeling tired.\"\n        - Correct: \"Based on the lab report you uploaded last week.\"\n        - Correct: \"Based on analyzing the meal photo from yesterday.\"\n        - Correct: \"Based on your BMI calculated from your profile information.\"\n        - Incorrect: \"Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z.\"\n        (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
     7.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent pattern of notes mentioning poor sleep warrants a sleep tip or mentioning it as a pain point).
-    8.  **Individuality & Actionability:** Focus on tips tailored to *this user\'s* unique situation (synthesizing recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
+    8.  **Individuality & Actionability:** Focus on tips tailored to *this user\'s* unique situation (synthesizing user profile data, recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
     9.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
 
         {
