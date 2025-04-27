@@ -21,6 +21,7 @@ interface HealthTips {
   dietTips: { tip: string; reason: string }[];
   habitTips: { tip: string; reason: string }[];
   supplementProposals: { supplement: string; reason: string }[];
+  fitnessTips: { tip: string; reason: string }[];
   shoppingList: { item: string; reason: string }[];
 }
 
@@ -197,6 +198,14 @@ export default function ReportPage() {
               "Habit / Lifestyle Tips",
               "habit"
             )}
+
+            {/* Fitness Tips Section */}
+            {renderTipList(
+              tipsData.fitnessTips,
+              "Fitness / Exercise Tips",
+              "fitness"
+            )}
+
             {renderTipList(tipsData.dietTips, "Diet Tips", "diet")}
             {renderTipList(
               tipsData.supplementProposals,

@@ -1,6 +1,14 @@
 import type React from "react";
 import MobileLayout from "@/components/mobile-layout";
-import { FileText, Search, Apple, Camera, Notebook, X } from "lucide-react";
+import {
+  FileText,
+  Search,
+  Apple,
+  Camera,
+  Notebook,
+  X,
+  Activity,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +21,7 @@ import {
   TopLevelCategory,
   DietSubcategory,
   HealthSubcategory,
+  IntegrationsSubcategory,
   // type ImageCategory, // No longer needed here if only using TopLevel/Sub cats
 } from "@/lib/image-categories"; // Import category types
 import Link from "next/link"; // Import Link for file links
@@ -36,6 +45,7 @@ type GroupedFiles = {
   diet: { [key in DietSubcategory]?: UploadedFile[] };
   selfies: UploadedFile[];
   health: { [key in HealthSubcategory]?: UploadedFile[] };
+  integrations: { [key in IntegrationsSubcategory]?: UploadedFile[] };
 };
 
 export default async function DocumentsPage() {
@@ -46,6 +56,7 @@ export default async function DocumentsPage() {
 
   let notes: any[] = [];
   let uploadedFiles: UploadedFile[] = []; // Use the updated type
+  let integrationsData: any[] = []; // Added for integrations data
 
   if (user) {
     const { data: notesData, error: notesError } = await supabase
@@ -89,6 +100,20 @@ export default async function DocumentsPage() {
       });
       uploadedFiles = await Promise.all(signedUrlPromises);
     }
+
+    // Fetch integrations data
+    const { data: integrationsDataResult, error: integrationsError } =
+      await supabase
+        .from("integrations_data")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("id", { ascending: false });
+
+    if (integrationsError) {
+      console.error("Error fetching integrations data:", integrationsError);
+    } else {
+      integrationsData = integrationsDataResult || [];
+    }
   }
 
   // Group uploadedFiles by category/subcategory
@@ -96,6 +121,7 @@ export default async function DocumentsPage() {
     diet: {},
     selfies: [],
     health: {},
+    integrations: {},
   };
   const allFiles: UploadedFile[] = []; // Keep track of all files for the 'all' tab
 
@@ -149,6 +175,29 @@ export default async function DocumentsPage() {
           // Decide if you want to put these in a default 'other' health category
         }
         break;
+      case TopLevelCategory.Integrations:
+        const integrationsSubcategoryValues = Object.values(
+          IntegrationsSubcategory
+        );
+        if (
+          file.subcategory &&
+          integrationsSubcategoryValues.includes(
+            file.subcategory as IntegrationsSubcategory
+          )
+        ) {
+          const subcat = file.subcategory as IntegrationsSubcategory;
+          if (!groupedFiles.integrations[subcat]) {
+            groupedFiles.integrations[subcat] = [];
+          }
+          // Explicitly push after ensuring array exists
+          groupedFiles.integrations[subcat].push(file);
+        } else if (file.subcategory) {
+          console.warn(
+            `Unknown/unhandled Integrations subcategory: ${file.subcategory} for file ${file.id}`
+          );
+          // Decide if you want to put these in a default 'other' integrations category
+        }
+        break;
       default:
         // Handle files explicitly marked with 'other' category or uncategorized
         console.warn(
@@ -163,6 +212,9 @@ export default async function DocumentsPage() {
     (arr) => !arr || arr.length === 0
   );
   const isHealthEmpty = Object.values(groupedFiles.health).every(
+    (arr) => !arr || arr.length === 0
+  );
+  const isIntegrationsEmpty = Object.values(groupedFiles.integrations).every(
     (arr) => !arr || arr.length === 0
   );
 
@@ -237,7 +289,7 @@ export default async function DocumentsPage() {
     <MobileLayout user={user}>
       <div className="flex flex-col items-center justify-center gap-4 p-4">
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-muted">
+          <TabsList className="grid w-full grid-cols-6 bg-muted">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="notes" className="flex items-center gap-1">
               <span className="hidden sm:inline">Notes</span>
@@ -254,6 +306,13 @@ export default async function DocumentsPage() {
             <TabsTrigger value="health" className="flex items-center gap-1">
               <span className="hidden sm:inline">Health</span>
               <span className="inline sm:hidden">🏥</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="integrations"
+              className="flex items-center gap-1"
+            >
+              <span className="hidden sm:inline">Integrations</span>
+              <span className="inline sm:hidden">🔄</span>
             </TabsTrigger>
           </TabsList>
 
@@ -326,7 +385,7 @@ export default async function DocumentsPage() {
                       0 && (
                       <div>
                         <h3 className="font-medium text-foreground mb-2">
-                          Food Images
+                          Meals
                         </h3>
                         <FileList
                           files={groupedFiles.diet[DietSubcategory.FoodImages]!}
@@ -374,6 +433,142 @@ export default async function DocumentsPage() {
                     .map(([subcat, files]) => (
                       <div key={subcat}>
                         {/* Simple title case for subcategory name */}
+                        <h3 className="font-medium text-foreground mb-2">
+                          {subcat
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </h3>
+                        <FileList
+                          files={files!}
+                          onDeleteFile={deleteFileAction}
+                        />
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="integrations" className="mt-4">
+            {isIntegrationsEmpty && integrationsData.length === 0 ? (
+              <EmptyState
+                icon={<Activity className="h-8 w-8 text-purple-500" />}
+                title="No integrations data"
+                description="Connect your health and fitness apps to see your data here"
+              />
+            ) : (
+              <Card>
+                <CardContent className="p-4 space-y-4">
+                  {/* Strava integration data */}
+                  {integrationsData.length > 0 && (
+                    <div>
+                      <h3 className="font-medium text-foreground mb-2">
+                        Strava Activities
+                      </h3>
+                      <div className="space-y-4">
+                        {integrationsData
+                          .filter(
+                            (integration) =>
+                              integration.integration_type === "strava"
+                          )
+                          .map((integration) => (
+                            <Card
+                              key={integration.id}
+                              className="overflow-hidden"
+                            >
+                              <CardContent className="p-4">
+                                <div className="space-y-4">
+                                  {integration.content.map(
+                                    (activity: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-slate-50 p-3 rounded-md border"
+                                      >
+                                        <div className="flex justify-between mb-2">
+                                          <h5 className="font-medium">
+                                            {activity.name}
+                                          </h5>
+                                          <Badge variant="outline">
+                                            {activity.type}
+                                          </Badge>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                          <div>
+                                            <span className="text-muted-foreground">
+                                              Distance:
+                                            </span>{" "}
+                                            {(activity.distance / 1000).toFixed(
+                                              2
+                                            )}{" "}
+                                            km
+                                          </div>
+                                          <div>
+                                            <span className="text-muted-foreground">
+                                              Duration:
+                                            </span>{" "}
+                                            {Math.floor(
+                                              activity.moving_time / 60
+                                            )}
+                                            :
+                                            {(activity.moving_time % 60)
+                                              .toString()
+                                              .padStart(2, "0")}{" "}
+                                            min
+                                          </div>
+                                          <div>
+                                            <span className="text-muted-foreground">
+                                              Date:
+                                            </span>{" "}
+                                            {new Date(
+                                              activity.start_date_local
+                                            ).toLocaleDateString()}
+                                          </div>
+                                          <div>
+                                            <span className="text-muted-foreground">
+                                              Avg Speed:
+                                            </span>{" "}
+                                            {(
+                                              activity.average_speed * 3.6
+                                            ).toFixed(1)}{" "}
+                                            km/h
+                                          </div>
+                                          {activity.total_elevation_gain >
+                                            0 && (
+                                            <div>
+                                              <span className="text-muted-foreground">
+                                                Elevation:
+                                              </span>{" "}
+                                              {activity.total_elevation_gain} m
+                                            </div>
+                                          )}
+                                          {activity.average_cadence && (
+                                            <div>
+                                              <span className="text-muted-foreground">
+                                                Cadence:
+                                              </span>{" "}
+                                              {Math.round(
+                                                activity.average_cadence
+                                              )}{" "}
+                                              spm
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Display uploaded files categorized as integrations */}
+                  {Object.entries(groupedFiles.integrations)
+                    .filter(([_, files]) => files && files.length > 0) // Filter out empty subcategories
+                    .map(([subcat, files]) => (
+                      <div key={subcat}>
                         <h3 className="font-medium text-foreground mb-2">
                           {subcat
                             .replace(/_/g, " ")

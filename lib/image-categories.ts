@@ -11,16 +11,25 @@ export enum HealthSubcategory {
   Other = "other",
 }
 
+export enum IntegrationsSubcategory {
+  Strava = "strava",
+}
+
 export enum TopLevelCategory {
   Diet = "diet",
   Selfies = "selfies",
   Health = "health",
+  Integrations = "integrations",
 }
 
 export type ImageCategory =
   | { category: TopLevelCategory.Diet; subcategory: DietSubcategory }
   | { category: TopLevelCategory.Selfies; subcategory: null } // Selfies have no subcategory
-  | { category: TopLevelCategory.Health; subcategory: HealthSubcategory };
+  | { category: TopLevelCategory.Health; subcategory: HealthSubcategory }
+  | {
+      category: TopLevelCategory.Integrations;
+      subcategory: IntegrationsSubcategory;
+    };
 
 // Helper function to get all categories for prompting the LLM
 export function getCategoryDescriptions(): string {
@@ -36,5 +45,7 @@ Categories and Subcategories:
   - prescriptions
   - surgical_documents
   - other
+- integrations
+  - strava
 `;
 }
