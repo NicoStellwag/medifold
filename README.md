@@ -6,7 +6,7 @@ Medifold is a platform that harnesses the power of o4-mini to transform healthca
 
 ## 🚀 Deployment
 
-The application is deployed and accessible at [https://medifold.netlify.app/](https://medifold.netlify.app/)
+The application is deployed and accessible at [https://medifold.vercel.app/](https://medifold.vercel.app/)
 
 ## 🛠️ Technical Implementation
 
