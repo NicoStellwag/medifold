@@ -108,11 +108,3 @@ Contributions are welcome. Please follow the standard GitHub flow:
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
-
-## License
-
-[MIT](LICENSE)
-
-## About the Team
-
-Medifold was created by a team passionate about leveraging AI to transform healthcare and improve lives.
