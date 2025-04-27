@@ -1,18 +1,16 @@
-# Medifold - AI-Powered Health Insights Platform
+# 🌿 Medifold - AI-Powered Health Insights Platform
 
-## Overview
+## 🔍 Overview
 
 Medifold is a platform that harnesses the power of o4-mini to transform healthcare by extracting actionable insights from complex and diverse data, ranging from selfies, medical reports to shopping receipts. Our mission is to enable a fundamental shift from reactive to proactive healthcare, empowering individuals with personalized, actionable health guidance derived from their own data to create a healthier society.
 
-This fully deployed data aggregation platform collects and manages multi-modal health inputs, using o4-mini to interpret diverse data sources and generate actionable insights for health improvement.
-
-## Deployment
+## 🚀 Deployment
 
 The application is deployed and accessible at [https://medifold.netlify.app/](https://medifold.netlify.app/)
 
-## Technical Implementation
+## 🛠️ Technical Implementation
 
-### Core Features
+### ✨ Core Features
 
 - **Onboarding Flow**: Multi-step process capturing user health metrics (height, weight, age, sex) and preferences using React state management.
 - **Authentication System**: Built with Supabase Auth, providing secure user authentication and session management.
@@ -21,7 +19,7 @@ The application is deployed and accessible at [https://medifold.netlify.app/](ht
 - **Report Generation**: Processes user data through o4-mini via the `/api/generate-tips` endpoint to provide actionable insights.
 - **Document Management**: Secure storage and retrieval system using Supabase storage buckets with client-side encryption.
 
-### Architecture
+### 🏗️ Architecture
 
 - **Frontend**: Next.js 15 application with React 19 and TypeScript
 - **Styling**: Tailwind CSS with custom theming
