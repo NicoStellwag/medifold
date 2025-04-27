@@ -29,17 +29,6 @@ export function ThemeToggle() {
       <AnimatePresence mode="wait" initial={false}>
         {theme === "dark" ? (
           <motion.div
-            key="moon"
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -10, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <Moon className="h-5 w-5 text-primary" />
-            <span className="sr-only">Dark Mode</span>
-          </motion.div>
-        ) : (
-          <motion.div
             key="sun"
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -48,6 +37,17 @@ export function ThemeToggle() {
           >
             <Sun className="h-5 w-5 text-primary" />
             <span className="sr-only">Light Mode</span>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="moon"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Moon className="h-5 w-5 text-primary" />
+            <span className="sr-only">Dark Mode</span>
           </motion.div>
         )}
       </AnimatePresence>

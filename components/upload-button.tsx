@@ -24,7 +24,13 @@ import {
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-export default function UploadButton() {
+export default function UploadButton({ 
+  primaryColor = "#0596D5",
+  secondaryColor = "#1A8FE0" 
+}: { 
+  primaryColor?: string; 
+  secondaryColor?: string;
+}) {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
@@ -308,11 +314,14 @@ export default function UploadButton() {
         >
           <Button
             size="lg"
-            className="group h-32 w-32 rounded-full bg-gradient-to-r from-primary to-secondary p-1 shadow-xl transition-all hover:shadow-2xl"
+            className={`group h-32 w-32 rounded-full bg-gradient-to-r from-[${primaryColor}] to-[${secondaryColor}] p-1 shadow-xl transition-all hover:shadow-2xl`}
             onClick={handleTriggerClick}
+            style={{
+              background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+            }}
           >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-card transition-colors group-hover:bg-primary/10">
-              <Upload className="h-12 w-12 text-primary transition-all group-hover:scale-110" />
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-card">
+              <Upload style={{color: primaryColor}} className="h-12 w-12 transition-all group-hover:scale-110" />
             </div>
           </Button>
         </motion.div>
@@ -332,7 +341,7 @@ export default function UploadButton() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-50 z-0" />
         <div className="relative z-10">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-primary">
+            <DialogTitle style={{color: primaryColor}} className="text-2xl font-bold">
               Upload Files
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -355,12 +364,17 @@ export default function UploadButton() {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className={cn(
-              "mt-6 flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors hover:border-primary/40",
+              "mt-6 flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
               isDragging ? "border-primary bg-primary/10" : "border-border"
             )}
+            style={{
+              borderColor: isDragging ? primaryColor : undefined,
+              backgroundColor: isDragging ? `${primaryColor}10` : undefined,
+              "--hover-border-color": `${primaryColor}40`
+            } as React.CSSProperties}
             onClick={handleUploadClick} // Trigger file input on click
           >
-            <Upload className="mb-2 h-8 w-8 text-primary" />
+            <Upload style={{color: primaryColor}} className="mb-2 h-8 w-8" />
             <p className="text-sm text-muted-foreground">
               {isDragging
                 ? "Drop files here..."
@@ -418,7 +432,10 @@ export default function UploadButton() {
               <Button
                 onClick={uploadFiles}
                 disabled={isUploading || files.length === 0}
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-semibold rounded-xl py-6 shadow-md"
+                className="w-full font-semibold rounded-xl py-6 shadow-md text-white"
+                style={{
+                  background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                }}
               >
                 {isUploading ? (
                   <>

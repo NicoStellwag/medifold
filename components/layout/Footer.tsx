@@ -21,13 +21,11 @@ export default function Footer() {
           className="flex flex-col items-center justify-center py-2"
         >
           <div
-            className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
-              isActive("/") ? "bg-primary shadow-md" : "hover:bg-primary/10"
-            }`}
+            className="flex h-12 w-12 flex-col items-center justify-center transition-all"
           >
             <Home
               className={`h-5 w-5 ${
-                isActive("/") ? "text-primary-foreground" : "text-primary"
+                isActive("/") ? "text-primary" : "text-muted-foreground"
               }`}
             />
           </div>
@@ -45,17 +43,11 @@ export default function Footer() {
           className="flex flex-col items-center justify-center py-2"
         >
           <div
-            className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
-              isActive("/documents")
-                ? "bg-primary shadow-md"
-                : "hover:bg-primary/10"
-            }`}
+            className="flex h-12 w-12 flex-col items-center justify-center transition-all"
           >
             <FileText
               className={`h-5 w-5 ${
-                isActive("/documents")
-                  ? "text-primary-foreground"
-                  : "text-primary"
+                isActive("/documents") ? "text-primary" : "text-muted-foreground"
               }`}
             />
           </div>
@@ -73,17 +65,11 @@ export default function Footer() {
           className="flex flex-col items-center justify-center py-2"
         >
           <div
-            className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-all ${
-              isActive("/settings")
-                ? "bg-primary shadow-md"
-                : "hover:bg-primary/10"
-            }`}
+            className="flex h-12 w-12 flex-col items-center justify-center transition-all"
           >
             <Settings
               className={`h-5 w-5 ${
-                isActive("/settings")
-                  ? "text-primary-foreground"
-                  : "text-primary"
+                isActive("/settings") ? "text-primary" : "text-muted-foreground"
               }`}
             />
           </div>

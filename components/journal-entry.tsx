@@ -60,9 +60,9 @@ export default function JournalEntry() {
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
         >
-          <Sparkles className="h-12 w-12 animate-bounce text-yellow-400 dark:text-yellow-300" />
+          <Sparkles className="h-16 w-16 animate-bounce text-yellow-400 dark:text-yellow-300 filter drop-shadow-lg" />
         </motion.div>
       )}
 
@@ -74,14 +74,14 @@ export default function JournalEntry() {
         >
           <Button
             variant="outline"
-            className="flex w-full justify-start gap-2 rounded-xl border border-border bg-card py-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+            className="flex w-full justify-start gap-2 rounded-xl border border-border bg-card py-6 shadow-sm transition-all hover:bg-transparent hover:text-current"
             onClick={() => setIsExpanded(true)}
           >
-            <div className="rounded-full bg-primary p-2 text-primary-foreground">
+            <div className="rounded-full bg-[#0596D5] p-2 text-white">
               <PenLine className="h-4 w-4" />
             </div>
-            <span className="font-medium text-primary">
-              Add a quick note ✏️
+            <span className="font-medium text-[#0596D5]">
+              Add a quick note
             </span>
           </Button>
         </motion.div>
@@ -101,13 +101,13 @@ export default function JournalEntry() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-xl border-border text-primary hover:bg-primary/10 hover:text-primary"
+              className="flex-1 rounded-xl border-border text-primary hover:bg-transparent hover:text-current"
               onClick={() => setIsExpanded(false)}
             >
               Cancel
             </Button>
             <Button
-              className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all hover:shadow-md"
+              className="flex-1 rounded-xl bg-primary text-primary-foreground transition-all hover:bg-primary hover:shadow-none"
               onClick={handleSave}
               disabled={!note.trim() || isSaving}
             >
