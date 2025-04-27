@@ -15,7 +15,7 @@ interface HealthTips {
   dietTips: { tip: string; reason: string }[];
   habitTips: { tip: string; reason: string }[];
   supplementProposals: { supplement: string; reason: string }[];
-  shoppingList: { item: string; reason: string }[];
+  shoppingList: { item: string; count: string; reason: string }[];
 }
 
 // Helper to convert ArrayBuffer to Base64
@@ -234,7 +234,13 @@ export async function GET() {
         - Correct: \"Based on your recent grocery shopping showing frequent high-sugar purchases over the past weeks.\"\n        - Correct: \"Based on your recent note about feeling tired.\"\n        - Correct: \"Based on the lab report you uploaded last week.\"\n        - Correct: \"Based on analyzing the meal photo from yesterday.\"\n        - Incorrect: \"Based on file receipt_jan25.pdf timestamp 2024-01-25T10:00:00Z.\"\n        (Internally, you MUST still use the specific data points and timestamps for your analysis and prioritization.)
     7.  **No Generic Advice:** AVOID general health recommendations UNLESS the data specifically indicates a relevant problem (e.g., a recent pattern of notes mentioning poor sleep warrants a sleep tip or mentioning it as a pain point).
     8.  **Individuality & Actionability:** Focus on tips tailored to *this user\'s* unique situation (synthesizing recent data, trends, and critical analysis of diet/habits). Tips should be concrete actions the user can take.
-    9.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
+    9.  **Weekly Shopping List Generation:** Create a comprehensive shopping list for one week that includes:
+        - Regular healthy items the user typically purchases (based on receipts, diet files, and purchase history)
+        - Estimated quantities/counts needed for each item
+        - New healthful items derived from medical data analysis and diet tips
+        - For each item, provide the 'count' and a 'reason' explaining why it's included (e.g., "Regular weekly purchase" or "Recommended to address iron deficiency shown in your lab results")
+        - **IMPORTANT:** DO NOT include unhealthy items in the shopping list, even if they appear in the user's purchase history. Instead, suggest healthier alternatives where appropriate.
+    10.  **JSON Format:** Respond ONLY with a valid JSON object matching this EXACT structure (no explanations outside JSON):
 
         {
           \"statusQuo\": \"[1-2 sentence summary based on data]\",
@@ -250,9 +256,11 @@ export async function GET() {
              // ... 4 more habit tips
           ],\n          \"supplementProposals\": [ // Provide exactly 5 items\n             { \"supplement\": \"...\", \"reason\": \"[User-friendly reason based on specific data]\" },
              // ... 4 more supplement proposals
-           ],\n          \"shoppingList\": [ // Derive items from dietTips; no fixed item limit
-            { \"item\": \"...\", \"reason\": \"To support [specific diet tip reference]\" }
-            // Add more items as needed based on the diet tips
+           ],\n          \"shoppingList\": [ // Create a comprehensive weekly shopping list
+            { \"item\": \"...\", \"count\": \"[quantity needed]\", \"reason\": \"[Based on purchase history/medical need]\" }
+            // Include both:
+            // 1. Regular items based on purchase history (average weekly buys)
+            // 2. New items derived from medical reasoning and diet tips
           ]
         }
 
